@@ -1,0 +1,28 @@
+{
+  "_note": "Real Israeli stock, seeded from supplier listings. Editable per supplier. Sizes mm. usable_sheet = plan-against size after kerf+edge; nominal_sheet = stock size.",
+  "sheet_goods": {
+    "melamine":      {"he": "\u05e1\u05d9\u05d1\u05d9\u05ea \u05de\u05dc\u05de\u05d9\u05df", "thick": [8,16,18,25], "nominal_sheet": [[2440,1220],[2800,2070]], "usable_sheet": [2400,1180], "actual_delta": 0, "notes": "actual \u2248 nominal"},
+    "mdf":           {"he": "MDF", "thick": [3,5.5,7.5,10,12,16,19,22,28,30], "nominal_sheet": [[2440,1220],[2800,2070]], "usable_sheet": [2400,1180], "actual_delta": 0, "notes": "tightly calibrated"},
+    "plywood_birch": {"he": "\u05d3\u05d9\u05e7\u05d8 \u05d1\u05d9\u05e8\u05e5\u05f3", "thick": [4,6,9,12,15,18,21,30], "nominal_sheet": [[2440,1220]], "usable_sheet": [2410,1190], "actual_delta": -1, "notes": "actual ~1mm under label; clean exposed edge"},
+    "plywood_okoume":{"he": "\u05d0\u05d5\u05e7\u05d5\u05de\u05d4", "thick": [4,6,8,10,12,17,20,30], "nominal_sheet": [[2440,1220]], "usable_sheet": [2410,1190], "actual_delta": -1, "notes": "cheaper; blotchy edge"},
+    "plywood_poplar":{"he": "\u05e6\u05e4\u05e6\u05e4\u05d4", "thick": [4,6,8,10,12,17], "nominal_sheet": [[2440,1220]], "usable_sheet": [2410,1190], "actual_delta": -1, "notes": "light, cheap"},
+    "osb":           {"he": "OSB", "thick": [11,15,18], "nominal_sheet": [[2440,1220]], "usable_sheet": [2410,1190], "actual_delta": -1},
+    "hardboard":     {"he": "\u05de\u05d6\u05d5\u05e0\u05d9\u05ea", "thick": [3,4,5], "nominal_sheet": [[2440,1220]], "usable_sheet": [2420,1200], "actual_delta": 0, "notes": "drawer bottoms, inset backs"}
+  },
+  "solid_lumber": {
+    "_note": "nominal cm sections sold un-planed; finished = nominal - plane_loss per dimension. plane_loss ASSUMED, confidence low, confirm with mill.",
+    "plane_loss_mm": 5,
+    "sections_nominal_mm": [[25,50],[25,100],[50,50],[50,100],[50,200]]
+  },
+  "drawer_mounts": {
+    "_note": "box_width = cabinet_clear_opening - opening_minus. Confirm exact value from runner datasheet.",
+    "side_ball_bearing":  {"opening_minus": 26, "he": "\u05de\u05e1\u05d5\u05d5\u05ea \u05db\u05d3\u05d5\u05e8\u05d9\u05dd \u05e6\u05d3", "load_kg": 45, "notes": "cheap, visible, IL-common, full extension"},
+    "undermount_softclose":{"opening_minus": 42, "he": "\u05de\u05e1\u05d5\u05d5\u05ea \u05ea\u05ea\u05d9", "load_kg": 40, "notes": "Blum Tandem/Hettich; hidden; notch box back"},
+    "metal_system":       {"opening_minus": null, "he": "\u05de\u05e2\u05e8\u05db\u05ea \u05de\u05ea\u05db\u05ea", "notes": "Blum Antaro/Legrabox; no ply sides, buy unit; shop makes front+bottom(+back)"},
+    "roller_light":       {"opening_minus": 26, "load_kg": 20, "notes": "3/4 extension, light duty"}
+  },
+  "hinges": {
+    "_note": "leaves per door by height",
+    "euro_softclose_35cup": {"per_leaf_by_height_mm": [[900,2],[1600,4],[2200,5]], "he": "\u05e6\u05d9\u05e8 \u05e1\u05de\u05d5\u05d9 35"}
+  }
+}
