@@ -30,6 +30,34 @@ It is not a full CAD package. It is a domain orchestrator that:
 - `scripts/sketchup_emit.py` — emits SketchUp build code for a Trimble SketchUp MCP backend, with unit conversion and part grouping.
 - `references/` — design, measurement, visualization, SketchUp integration, and deliverables guidance.
 
+## Using this skill with Claude
+
+### Claude Desktop
+
+1. Copy this repository into Claude's skills directory so it can discover the skill:
+   - Windows: `%USERPROFILE%\.claude\skills\furniture-design`
+   - macOS/Linux: `~/.claude/skills/furniture-design`
+2. The folder should contain `SKILL.md` and the supporting project files.
+3. If your Claude Desktop build supports importing a packaged skill, you can also import `furniture-design.skill` instead of the folder.
+4. Restart Claude Desktop and start a new chat or project so the skill is discovered.
+
+### Claude CLI / Claude Code
+
+1. Place this repository in the skills directory your CLI uses, or create a symlink to it there.
+2. Restart the CLI session so it reloads available skills.
+3. In a new session, ask for furniture-design tasks and the skill should be available.
+
+### SketchUp MCP setup
+
+This skill is most useful when the SketchUp MCP connector is also available:
+
+1. Install and launch the Trimble SketchUp MCP connector/server.
+2. Enable it in Claude Desktop or your CLI session.
+3. Confirm the connector can open SketchUp and save a `.skp` model.
+4. Once that is working, the skill can use `scripts/sketchup_emit.py` to generate model-ready build instructions.
+
+For implementation details, see `references/sketchup-integration.md`.
+
 ## Usage
 
 ### 1. Build the positioned-part spec
