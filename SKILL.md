@@ -60,13 +60,19 @@ At the start of a project, ask which **construction style** applies (frameless /
 System-32 sheet goods, or solid-wood traditional joinery) — it changes
 everything downstream, and there is no safe default.
 
+Throughout, maintain the project record at `docs/spec.md` in the working
+directory (see "The project record" below) — it is where the brief, the
+measurements with their sources, and every decision with its rationale live.
+Write these there, not to Claude's memory.
+
 ### 1 — Capture intent
 
 Establish, in plain conversation: what the piece is, where it lives, what it must
 hold or do, the style/material vibe, who is building it, and the budget posture
 (flat-pack KD vs glued-and-doweled vs fine joinery). Accept inspiration photos
 and sketches here freely — they are gold for *intent*. Restate the brief back so
-the user can correct it before any drawing happens.
+the user can correct it before any drawing happens. Once they confirm, write it
+into the **Brief** section of `docs/spec.md`.
 
 ### 2 — Measurement intake
 
@@ -74,9 +80,9 @@ This is the discipline that makes the output trustworthy. Read
 `references/measurement-intake.md` and walk the user through the right checklist
 for their case (built-in vs freestanding differ a lot). Built-ins especially:
 walls are not square, floors are not level, and a single "the wall is 3 m" number
-is a trap. Record everything into the working spec with its source noted
-(measured / standard / assumed). Mark every assumed number as `assumed` so it is
-visible later.
+is a trap. Record everything into the **Measurements** table in `docs/spec.md`
+with its source noted (measured / standard / assumed). Mark every assumed number
+as `assumed` so it is visible later.
 
 ### 3 — Visual iteration
 
@@ -114,6 +120,8 @@ Now make it buildable. Read `references/construction-knowledge.md` and resolve:
 material and panel thicknesses; carcass construction; joinery; hardware (hinges,
 runners, shelf supports, legs, handles); edge banding; and — for built-ins —
 scribe/filler allowances against the un-square reality measured in stage 2.
+Log each resolution to the **Decisions** section of `docs/spec.md` with a
+one-line rationale, so a choice is never silently reversed later.
 
 The error that hides here is **material-thickness math**. A nominal 1000 mm-wide
 carcass in 18 mm panels has an internal width of 1000 − 2×18 = 964 mm, the shelf
@@ -227,6 +235,12 @@ caller's bounds on trust) are in `LIMITATIONS.md`.
     `assumed` and tell the user to verify before drilling. A wrong drilling
     coordinate ruins a panel — this rule exists because LLM numeric recall
     is not reliable enough for fabrication.
+14. **`docs/spec.md` is the source of truth for the design inputs — not memory,
+    not a script docstring.** The measurements (with sources), materials,
+    hardware, and decisions are authored there; the geometry script and every view
+    derive from it, one way. Change an input there first, then rebuild. Where a
+    script and the record disagree, the record wins. Keep assumed numbers flagged
+    until confirmed.
 
 ## Reference files
 
@@ -251,15 +265,78 @@ caller's bounds on trust) are in `LIMITATIONS.md`.
   piece — it documents the `divider()` bounds trap and the box-carcass-only
   generality boundary.
 
+## The project record (`docs/spec.md`)
+
+Every project keeps one human-readable record at `docs/spec.md` in the working
+directory — created at stage 1 and updated as you go. It is the durable memory of
+the project: the brief, the measurements with their sources, and every decision
+with its rationale. **Persist these here, not to a session's memory** — a
+furniture project outlives a conversation, and the next session (or the carpenter)
+needs to see *why* a number is what it is. Write it in the language of the
+conversation.
+
+Structure:
+
+- **Brief** — what the piece is, where it lives, function, style/material vibe,
+  who builds it, budget posture, and the chosen construction style.
+- **Measurements** — a table of every dimension: value (mm), source
+  (`measured` / `standard` / `assumed`), and a note. Assumed numbers stay flagged
+  until confirmed.
+- **Decisions** — a running log: each material, joinery, hardware, and layout
+  decision with a one-line rationale, so a choice is never silently reversed.
+- **Open questions** — anything to verify before cutting: assumed numbers,
+  availability to confirm, measurements still owed.
+
+**`docs/spec.md` is the source of truth for the design *inputs*** — the measured
+dimensions, materials, thicknesses, hardware, and decisions. These are *authored*
+here; everything downstream derives from them. The chain runs one way:
+
+```
+docs/spec.md                 authored inputs — SOURCE OF TRUTH for measurements,
+   │                         materials, hardware, decisions (each with its source)
+   │  (agreed numbers transcribed in)
+   ▼
+<piece>_spec.py              the per-project instance script — drives carcass.py
+   │  .spec()                (the shared parametric engine; not edited per project)
+   ▼
+positioned-part spec         every part: corner + size + material + grain,
+(the dict / spec.json)       computed with thickness math — source of truth for geometry
+   │
+   ├─► draw.py           →  2D dimensioned SVG (elevations)
+   ├─► render.py         →  3D three.js preview
+   ├─► cutlist.py        →  cut list / BOM        (reads spec.json)
+   ├─► assembly.py       →  drilling coords + build order   ◄── assets/joinery.json
+   └─► sketchup_emit.py  →  build_model code → .skp
+```
+
+There are exactly **two authored sources of truth**: `docs/spec.md` (design inputs)
+and `assets/joinery.json` (verified drilling/hardware specs, read by `assembly.py`
+— hard rule 13). Everything else — the positioned-part spec and all five outputs —
+is *derived*.
+
+When any input changes, it changes **here first**, then the geometry script and
+every view are regenerated to match. Never re-declare a measured number as a
+canonical copy inside a script docstring or a comment — the number lives here; the
+script *reads* it. Where the script and this record disagree, **this record wins**
+and the script is corrected.
+
 ## The working spec
 
-Keep one structured spec for the project as you go. **The canonical shape is the
+Keep one structured spec for the project as you go. It sits **below `docs/spec.md`
+in the derivation chain**: the record above is canonical for the design *inputs*;
+this spec is canonical for the *derived geometry*. **Its shape is the
 positioned-part spec produced by `carcass.py`** — every part with its corner,
-size, definition name, material, and grain — and every view (2D SVG, 3D render,
-SketchUp model) and the cut list are *derived* from it, never edited directly.
+size, definition name, material, and grain — computed from the record's inputs so
+the thickness math is right (never hand-write `964 = 1000 − 2×18` coordinates in
+markdown; that arithmetic is what `carcass.py` exists to get correct). Every view
+(2D SVG, 3D render, SketchUp model) and the cut list are *derived* from this spec,
+never edited directly.
+
 The flat cut-list JSON documented in `references/deliverables.md` is a derived
 format: generate it with `cutlist_parts()`, don't hand-transcribe (hand-write it
-only for out-of-envelope pieces that never had a positioned spec). Alongside the
-geometry, track measurement sources (`measured`/`standard`/`assumed`), joinery,
-and hardware. When in doubt, update the spec, then regenerate all views and the
-cut list from it, so they can never drift apart.
+only for out-of-envelope pieces that never had a positioned spec). The input
+numbers this spec is built from — the measurements with their sources
+(`measured`/`standard`/`assumed`), and the joinery and hardware decisions — must
+trace back to `docs/spec.md`, not be independently declared here. When an input
+changes, update `docs/spec.md`, then rebuild this spec, then regenerate all views
+and the cut list from it, so nothing can drift apart.

@@ -13,10 +13,35 @@ It is not a full CAD package. It is a domain orchestrator that:
 
 ## Key concepts
 
-- **Spec-driven**: every output is generated from one structured spec. The spec is the single source of truth, and all downstream outputs should be regenerated from it.
+- **Two authored sources of truth**: the design *inputs* — measurements (with their source), materials, hardware, and decisions — are authored in a per-project `docs/spec.md`; the verified drilling/hardware specs live in `assets/joinery.json`. Everything else is *derived* from these and should never be authored twice.
+- **Spec-driven**: from the authored inputs, one **positioned-part spec** is computed (part positions with thickness math). Every output — cut list, 2D drawings, 3D preview, assembly plan, SketchUp build — is generated from that positioned spec and should be regenerated from it, never hand-edited.
 - **Millimetre-first**: the internal working units are mm. This repo preserves mm as the authoritative data and converts only at the SketchUp boundary.
 - **Human-aware**: images and sketches are for intent only; real dimensions must come from measurement or agreed standards.
 - **Carpenter package**: the goal is a cut list/BOM, shop drawings, a hardware schedule, and optionally a real `.skp` model.
+
+## Data flow
+
+Inputs are authored once, at the top, and flow one way to every output:
+
+```
+docs/spec.md                 authored inputs — SOURCE OF TRUTH for measurements,
+   │                         materials, hardware, decisions (each with its source)
+   │  (agreed numbers transcribed in)
+   ▼
+<piece>_spec.py              the per-project instance script — drives carcass.py
+   │  .spec()                (the shared parametric engine; not edited per project)
+   ▼
+positioned-part spec         every part: corner + size + material + grain,
+(the dict / spec.json)       computed with thickness math — source of truth for geometry
+   │
+   ├─► draw.py           →  2D dimensioned SVG (elevations)
+   ├─► render.py         →  3D three.js preview
+   ├─► cutlist.py        →  cut list / BOM        (reads spec.json)
+   ├─► assembly.py       →  drilling coords + build order   ◄── assets/joinery.json
+   └─► sketchup_emit.py  →  build_model code → .skp
+```
+
+Change an input in `docs/spec.md` first, then rebuild the positioned spec, then regenerate the outputs — so nothing drifts. Where a script and `docs/spec.md` disagree, the record wins and the script is corrected.
 
 ## Repository structure
 
@@ -65,7 +90,10 @@ For implementation details, see `references/sketchup-integration.md`.
 The canonical spec is the **positioned-part spec** built with `scripts/carcass.py`
 — every part with its corner position, size, definition name, material, and
 grain. Every downstream output (cut list, 2D drawings, 3D preview, SketchUp
-build) is derived from it.
+build) is derived from it. The input numbers you pass in (dimensions, material,
+thickness) should come from the project's `docs/spec.md`, where they are authored
+and their sources recorded — not re-declared here as their canonical copy (see
+[Data flow](#data-flow)).
 
 ```python
 from scripts.carcass import Carcass, check_overlaps
