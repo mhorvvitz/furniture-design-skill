@@ -11,6 +11,14 @@ arithmetic, sheet-fit validation, edge-banding totals, and sheet-yield estimate
 are computed deterministically rather than reasoned out. Reason about the design;
 let the script do the counting.
 
+**Where this JSON comes from**: if the piece was built with `carcass.py` (the
+default), derive the `parts` array with `carcass.cutlist_parts(spec)` — it
+collapses the positioned spec into this schema and auto-disambiguates any part
+name reused across different sizes. Never hand-transcribe dimensions from the
+positioned spec into this file; that re-introduces exactly the arithmetic errors
+the pipeline exists to prevent. Hand-write this JSON only for out-of-envelope
+pieces that have no positioned spec.
+
 ### Spec JSON the script consumes
 
 ```json
@@ -150,6 +158,10 @@ rest are judgement.
    height.
 10. **Assumed numbers resolved**: every `assumed` value in the spec has been
     confirmed or flagged to the user.
+11. **`check_overlaps()` clean**: run it on the positioned spec; every flag must
+    be explicitly accounted for — either a rebate/groove joint the box model
+    can't represent (inset backs, drawer bottoms — expected), or a real clash
+    that must be fixed. An unaccounted flag blocks export. Hard rule 12.
 
 If any check fails, fix the spec and regenerate the cut list and drawings from it.
 Never reconcile by editing a single output by hand — the spec is the source of

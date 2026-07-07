@@ -6,10 +6,17 @@ disagree with the numbers.
 
 ## 2D — scaled drawings via the `visualize` tool
 
-Use `show_widget` with SVG. These are for *iterating the design*, and double as
-the basis for the final shop drawings.
+**Default path**: build the positioned-part spec with `scripts/carcass.py` and
+emit the SVG with `scripts/draw.py` — it already implements the conventions
+below (scale, dimension chains, thickness as double lines, door-hiding via the
+`kind="door"` tag) and is verified on real pieces. Show the result with
+`show_widget`. Hand-write the SVG only for pieces outside the box-carcass
+envelope; then the conventions below are your spec.
 
-Conventions:
+These drawings are for *iterating the design*, and double as the basis for the
+final shop drawings.
+
+Conventions (implemented by `draw.py`; binding on hand-drawn fallbacks):
 - **Draw to scale.** Pick a scale that fits the viewport (e.g. 1:10, 1:20) and
   apply it uniformly. A view that is not to scale teaches the user the wrong
   proportions.
@@ -38,7 +45,12 @@ AI photoreal image generator is available in this environment, so this three.js
 render is the realistic preview; aim for product-render quality, not a flat CAD
 look.
 
-Build an HTML artifact with three.js the user can orbit.
+**Default path**: emit the HTML with `scripts/render.py` from the same
+positioned spec — it already handles the r128 constraints below (manual orbit,
+no CapsuleGeometry), per-material colours, soft shadows and studio lighting.
+Hand-build the three.js artifact only for out-of-envelope pieces, or when the
+user wants render polish beyond what the emitter produces (custom grain
+textures, exploded-view toggles); then everything below applies.
 
 Environment constraints (important — these will bite if ignored):
 - three **r128** is available.

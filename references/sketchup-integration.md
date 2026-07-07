@@ -134,6 +134,16 @@ transform, not a vertex rewrite.
 
 ## Modelling workflow
 
+**Default path**: generate the `build_model` code with `scripts/sketchup_emit.py`
+from the positioned-part spec. It encodes, verbatim from the bundled skills and
+verified live three times, the patterns that go wrong when re-derived: the
+mm→inch conversion and spec-axis→SketchUp-axis remap, component definitions with
+disambiguated names, lofted-cylinder rods with geometry cleanup, the
+Furniture/Product Studio style preset, and the hero camera. Hand-write
+`build_model` code — after reading the bundled skills via `read_skill` — only
+for geometry the emitter doesn't cover. Either way, the workflow rules below
+apply:
+
 1. **Start clean.** First `build_model` of a modelling pass uses `clean: true` —
    guarantees an empty model and clears `session_state`, regardless of any
    residual state from a previous conversation (saved sessions stay alive).

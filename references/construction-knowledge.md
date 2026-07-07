@@ -109,6 +109,12 @@ joinery, where the grid does not apply.
 Pick per construction style and per budget. Built-ins are usually KD (knock-down)
 or doweled-and-glued; fine freestanding work earns real joinery.
 
+**Machine-readable drilling specs** live in `assets/joinery.json` — verified
+against Häfele and Blum first-party sources with confidence levels per number.
+`scripts/assembly.py` reads it to generate per-part drilling coordinates; consult
+it (hard rule 13) before emitting any drilling dimension. The prose below explains
+when to use each method; the JSON carries the exact hole sizes.
+
 Sheet-goods / KD:
 - **Cam-and-dowel** (minifix/Rafix + dowel): the standard flat-pack/site-assembly
   connector. Hidden, demountable, fast. Default for kitchens and closets.

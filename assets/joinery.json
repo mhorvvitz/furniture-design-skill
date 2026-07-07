@@ -1,0 +1,201 @@
+{
+  "_note": "Drilling specifications for common Israeli-shop joinery. Every number has a source and confidence. Verify against the actual hardware you purchase — manufacturers revise specs. All dimensions mm.",
+  "_sources": {
+    "hafele_minifix": "Häfele product pages P-00861332, P-00861333 (hafele.com.de/en); Häfele UK catalog 2014 p.295–305",
+    "confirmat": "Snappy Tools 43750 spec; Rockler M7.0×50mm spec; FASTO confirmat sizing guide 2025",
+    "euro_hinge": "Blum CLIP top catalog 2022/2023 (publications.blum.com); FineWoodworking forum verified dimensions; WoodWeb verified boring distances",
+    "dowel": "Excel Dowel FAQ (exceldowel.com); Australian Wood Review dowel guide; Wolfcraft Ø8mm kit specs"
+  },
+
+  "cam_and_dowel": {
+    "he": "קם ודובל (מיניפיקס)",
+    "description": "KD (knock-down) connector: Ø15mm cam housing in face of one panel, Ø8mm bolt into edge of mating panel. Demountable, hidden under cover cap.",
+    "suitable_materials": ["melamine", "mdf", "plywood_birch", "plywood_okoume"],
+    "min_panel_thickness": 18,
+    "cam_housing": {
+      "hole_diameter": 15,
+      "drilling_depth_18mm_panel": 13.5,
+      "depth_tolerance": "+0.5",
+      "drill_bit": "Forstner Ø15mm",
+      "edge_distance_options": {
+        "B24": {"center_to_front_edge": 24, "bolt_hole_diameter": 5, "notes": "compact; tight layout"},
+        "B34": {"center_to_front_edge": 34, "bolt_hole_diameter": 8, "notes": "standard; aligns near System-32 front row (37mm)"}
+      },
+      "confidence": "high",
+      "source": "hafele_minifix"
+    },
+    "connecting_bolt": {
+      "bolt_hole_diameter": 8,
+      "bolt_hole_depth_into_edge": 24,
+      "drill_bit": "Brad-point Ø8mm",
+      "edge_center": "panel_thickness / 2",
+      "confidence": "high",
+      "source": "hafele_minifix"
+    },
+    "alignment_dowel": {
+      "diameter": 8,
+      "length": 30,
+      "hole_depth_per_side": 17,
+      "drill_bit": "Brad-point Ø8mm",
+      "setback_from_cam": 32,
+      "notes": "one alignment dowel per cam, 32mm behind it on the System-32 grid",
+      "confidence": "moderate",
+      "source": "hafele_minifix"
+    },
+    "per_joint_hardware": ["1× Minifix Ø15 cam housing", "1× Minifix connecting bolt Ø8×24mm", "1× cover cap Ø15mm"],
+    "joints_per_panel": {
+      "rule": "2 cams for panels ≤600mm wide, 3 for 600–1000mm, 4 for >1000mm",
+      "spacing_from_edge": 50,
+      "min_spacing_between": 128,
+      "confidence": "moderate",
+      "source": "hafele_minifix"
+    }
+  },
+
+  "confirmat": {
+    "he": "בורג קונפירמט",
+    "description": "Self-tapping furniture screw through face of one panel into edge of mating panel. Strong, simple, visible head (or capped). Not demountable.",
+    "suitable_materials": ["melamine", "mdf"],
+    "unsuitable_note": "Weak in plywood edge — use dowels or cam-and-dowel instead",
+    "common_size": "7×50mm",
+    "stepped_drill": {
+      "face_hole_diameter": 7,
+      "face_hole_depth": "through (panel thickness)",
+      "edge_pilot_diameter": 5,
+      "edge_pilot_depth": 45,
+      "drill_bit": "Confirmat stepped drill 7×50 (Ø5mm pilot + Ø7mm clearance + countersink)",
+      "edge_center": "panel_thickness / 2",
+      "confidence": "high",
+      "source": "confirmat"
+    },
+    "per_joint_hardware": ["1× confirmat screw 7×50mm", "1× cover cap (optional)"],
+    "joints_per_panel": {
+      "rule": "same as cam-and-dowel: 2 for ≤600mm, 3 for 600–1000mm, 4 for >1000mm",
+      "spacing_from_edge": 50,
+      "min_spacing_between": 128,
+      "confidence": "moderate",
+      "source": "confirmat"
+    }
+  },
+
+  "glued_dowel": {
+    "he": "דובל עץ מודבק",
+    "description": "Fluted hardwood dowel, glued. Permanent joint — not demountable. Needs accurate boring (jig or drill press).",
+    "suitable_materials": ["melamine", "mdf", "plywood_birch", "plywood_okoume", "plywood_poplar", "solid"],
+    "standard_diameter": 8,
+    "standard_length": 30,
+    "hole": {
+      "diameter": 8,
+      "depth_per_side": 17,
+      "drill_bit": "Brad-point Ø8mm with depth stop",
+      "depth_rule": "drill 2mm deeper than dowel insertion depth for glue trap",
+      "max_face_depth_rule": "never deeper than 75% of panel thickness (blowout risk)",
+      "edge_center": "panel_thickness / 2",
+      "confidence": "high",
+      "source": "dowel"
+    },
+    "diameter_rule": "dowel diameter ≤ ⅓ of thinnest board being joined (Ø8mm for 18mm+ panels)",
+    "per_joint_hardware": ["1× fluted hardwood dowel Ø8×30mm", "wood glue"],
+    "joints_per_panel": {
+      "rule": "2 for ≤400mm, 3 for 400–800mm, 4 for >800mm",
+      "spacing_from_edge": 40,
+      "min_spacing_between": 96,
+      "confidence": "moderate",
+      "source": "dowel"
+    }
+  },
+
+  "shelf_pin": {
+    "he": "פין מדף",
+    "description": "Adjustable shelf support inserted into System-32 holes.",
+    "hole_diameter": 5,
+    "hole_depth": 10,
+    "grid_spacing": 32,
+    "front_row_setback": 37,
+    "rear_row_setback_rule": "panel_depth - 37 (mirror of front row)",
+    "drill_bit": "Ø5mm with depth stop",
+    "per_shelf_hardware": ["4× shelf pins Ø5mm"],
+    "confidence": "high",
+    "source": "hafele_minifix"
+  },
+
+  "euro_hinge_35cup": {
+    "he": "ציר סמוי 35",
+    "description": "Concealed euro hinge with Ø35mm cup. Mounting plate on carcass side at System-32 front row.",
+    "cup": {
+      "diameter": 35,
+      "depth": 12,
+      "drill_bit": "Forstner Ø35mm",
+      "edge_distance_hole_to_door_edge": 5,
+      "center_to_door_edge": 22.5,
+      "confidence": "high",
+      "source": "euro_hinge"
+    },
+    "mounting_screws": {
+      "behind_cup_center": 9.5,
+      "apart": 45,
+      "pilot_diameter": 3,
+      "pilot_depth": 10,
+      "confidence": "high",
+      "source": "euro_hinge"
+    },
+    "mounting_plate": {
+      "carcass_edge_distance": 37,
+      "screw_pilot_diameter": 3,
+      "screw_pilot_depth": 10,
+      "notes": "A37 plate (System-32 standard); A20 also exists for face-frame",
+      "confidence": "high",
+      "source": "euro_hinge"
+    },
+    "placement_from_door_ends": {
+      "rule": "≥70mm from top/bottom edge of door",
+      "confidence": "high",
+      "source": "euro_hinge"
+    }
+  },
+
+  "wall_fixing": {
+    "he": "תליית ארון",
+    "description": "Wall suspension for built-ins and tall units.",
+    "methods": {
+      "french_cleat": {
+        "he": "מתלה צרפתי",
+        "notes": "45° bevel strip; simple, strong. Confirm wall material (בלוק/גבס/בטון) for appropriate screws."
+      },
+      "suspension_bracket": {
+        "he": "מתלה תליה",
+        "notes": "Häfele/Camar cabinet hanger; adjustable. Screw pattern per datasheet."
+      }
+    },
+    "anti_tip_mandatory": "any tall unit in a child's room must be anchored to the wall",
+    "confidence": "high"
+  },
+
+  "_default_by_style": {
+    "_note": "Mapping from construction style to default joinery. assembly.py uses this to assign joinery when the user hasn't specified.",
+    "frameless_kd": {
+      "carcass_joints": "cam_and_dowel",
+      "fixed_panels": "cam_and_dowel",
+      "shelves_adjustable": "shelf_pin",
+      "shelves_fixed": "glued_dowel",
+      "back": "dado_groove",
+      "notes": "Demountable default for flat-pack / built-in Israeli cabinetry"
+    },
+    "frameless_permanent": {
+      "carcass_joints": "confirmat",
+      "fixed_panels": "confirmat",
+      "shelves_adjustable": "shelf_pin",
+      "shelves_fixed": "glued_dowel",
+      "back": "dado_groove",
+      "notes": "Cheaper, faster, permanent. Common for budget closets."
+    },
+    "traditional": {
+      "carcass_joints": "glued_dowel",
+      "fixed_panels": "glued_dowel",
+      "shelves_adjustable": "shelf_pin",
+      "shelves_fixed": "glued_dowel",
+      "back": "dado_groove",
+      "notes": "For plywood/solid-wood pieces where hidden joints matter"
+    }
+  }
+}

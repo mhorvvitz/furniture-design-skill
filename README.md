@@ -32,17 +32,29 @@ It is not a full CAD package. It is a domain orchestrator that:
 
 ## Usage
 
-### 1. Build or import a spec
+### 1. Build the positioned-part spec
 
-The repo does not include a single user-facing CLI for spec creation. Use `scripts/carcass.py` as a reference or build your own JSON spec matching the expected shape.
+The canonical spec is the **positioned-part spec** built with `scripts/carcass.py`
+— every part with its corner position, size, definition name, material, and
+grain. Every downstream output (cut list, 2D drawings, 3D preview, SketchUp
+build) is derived from it.
 
-A spec typically includes:
+```python
+from scripts.carcass import Carcass, check_overlaps
 
-- `project` / `name`
-- `units` = `mm`
-- `materials` with `id`, `name`, `thickness`, `sheet`, `kerf`, and `trim`
-- `parts` with `name`, `qty`, `length`, `width`, `material`, `grain`, `banding`, and optional `notes`
-- optional `checks.overall` for envelope sanity checks
+c = Carcass(800, 1800, 300, t=18, name="Bookshelf")
+c.sides(); c.bottom(); c.top(); c.back(4); c.shelves(4, y0=18, y1=1782)
+spec = c.spec()
+check_overlaps(spec)   # account for every flag before continuing
+```
+
+There are two JSON shapes in this repo — don't confuse them:
+
+- the **positioned spec** above (corner + size per part): the source of truth;
+- the **flat cut-list JSON** consumed by `cutlist.py` (`materials` +
+  `parts` with `length`/`width`/`qty`/`banding`): a derived format. Generate its
+  `parts` array with `carcass.cutlist_parts(spec)` rather than transcribing
+  dimensions by hand. Only hand-write it for pieces `carcass.py` can't model.
 
 ### 2. Generate a cut list
 
@@ -82,7 +94,20 @@ render(c.spec(), "bookshelf.html")
 
 Open the HTML file in a web browser.
 
-### 5. Emit SketchUp build code
+### 5. Generate an assembly plan
+
+```python
+from scripts.assembly import write_assembly_plan
+from scripts.carcass import Carcass
+
+c = Carcass(800, 1800, 300, t=18, name="Bookshelf")
+c.sides(); c.bottom(); c.top(); c.back(4); c.shelves(4, y0=18, y1=1782)
+write_assembly_plan(c.spec(), "bookshelf_assembly.md", style="frameless_permanent")
+```
+
+The assembly plan includes per-part drilling coordinates (from `assets/joinery.json`), a hardware list, tools needed, and a reachability-sorted build order. All drilling dimensions are sourced from verified Häfele/Blum specifications with confidence levels.
+
+### 6. Emit SketchUp build code
 
 If you have a Trimble SketchUp MCP connector available, `scripts/sketchup_emit.py` can emit the Python string used by the connector to build the model.
 
@@ -97,6 +122,14 @@ Use these docs for detailed workflow and discipline:
 - `references/visualization.md` — 2D drawing conventions and the three.js render tier.
 - `references/sketchup-integration.md` — SketchUp MCP unit boundary, tool availability, and workspace model expectations.
 - `references/deliverables.md` — cut list schema, shop drawing package requirements, and pre-export checks.
+- `assets/joinery.json` — machine-readable drilling specs for Israeli-standard joinery (cam-and-dowel, confirmat, glued dowel, shelf pins, euro hinges). Verified against Häfele and Blum first-party sources.
+
+## v2 roadmap
+
+Planned additions for the assembly plan (tracked in `assets/joinery.json` and `scripts/assembly.py`):
+
+- **Hinge-cup drilling positions**: Ø35mm cup boring on doors, mounting plate positions on carcass sides. Data already seeded in joinery.json (`euro_hinge_35cup`); emitter integration deferred because positions are brand/overlay-dependent and need the user's specific hinge datasheet.
+- **Drawer runner mounting positions**: screw hole coordinates for side-mount and undermount runners. Deferred because clearances are mount-specific (current `drawer_mounts` in materials.json carries the box-width deduction but not screw positions).
 
 ## Design principles
 
