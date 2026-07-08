@@ -2,8 +2,9 @@
 __pycache__/
 *.py[cod]
 
-# Packaged skill archives (build artifacts, not source)
+# Stray zips, but keep the tracked release snapshot
 *.zip
+!/furniture-design-skill-main.zip
 
 # Generated deliverables
 output/

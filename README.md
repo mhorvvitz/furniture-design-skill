@@ -2,13 +2,18 @@
 
 A lightweight furniture design toolchain for generating carpentry-ready deliverables from a structured part spec.
 
+> **New here?** The [landing page](https://mhorvvitz.github.io/furniture-design-skill/) has one-click downloads and install steps. Or jump straight to [Using this skill with Claude](#using-this-skill-with-claude).
+
 It is not a full CAD package. It is a domain orchestrator that:
 
 - holds a consistent millimetre-based furniture spec
 - computes panel/thickness math and part positions
-- emits a validated cut list / BOM
-- renders 2D dimensioned shop drawings as SVG
-- produces an interactive three.js 3D preview
+- emits a validated cut list / BOM (md, csv, json, **xlsx**)
+- renders 2D dimensioned shop drawings as SVG (plan, elevations, open-state)
+- produces an interactive three.js 3D preview with open/close + explode toggles
+- assembles a **print-clean packet PDF** from the drawings and cut list
+- generates an assembly plan with per-part drilling coordinates
+- regenerates the entire package from one spec with a single command
 - can emit SketchUp-compatible build scripts when a SketchUp MCP connector is available
 
 ## Key concepts
@@ -34,11 +39,15 @@ docs/spec.md                 authored inputs — SOURCE OF TRUTH for measurement
 positioned-part spec         every part: corner + size + material + grain,
 (the dict / spec.json)       computed with thickness math — source of truth for geometry
    │
-   ├─► draw.py           →  2D dimensioned SVG (elevations)
+   ├─► draw.py           →  2D dimensioned SVG (plan + elevations + open-state)
    ├─► render.py         →  3D three.js preview
-   ├─► cutlist.py        →  cut list / BOM        (reads spec.json)
+   ├─► cutlist.py        →  cut list / BOM  (md/csv/xlsx/json; reads spec.json)
    ├─► assembly.py       →  drilling coords + build order   ◄── assets/joinery.json
-   └─► sketchup_emit.py  →  build_model code → .skp
+   ├─► sketchup_emit.py  →  build_model code → .skp
+   └─► packet.py         →  print-clean packet PDF (views + cut list + assembly)
+
+   package.py runs draw/render/cutlist/assembly/packet in one command,
+   gated on check_overlaps — use it to regenerate the whole package after a change.
 ```
 
 Change an input in `docs/spec.md` first, then rebuild the positioned spec, then regenerate the outputs — so nothing drifts. Where a script and `docs/spec.md` disagree, the record wins and the script is corrected.
@@ -48,29 +57,37 @@ Change an input in `docs/spec.md` first, then rebuild the positioned spec, then 
 - `SKILL.md` — project description and operation notes for the furniture-design skill.
 - `LIMITATIONS.md` — verified behavior, known limitations, and what is intentionally deferred.
 - `assets/materials.json` — material catalog used by the emitter and drawer logic.
-- `scripts/carcass.py` — parametric spec builder for furniture carcasses, shelves, doors, drawers, rods, and other parts.
-- `scripts/cutlist.py` — converts a JSON furniture spec into a validated cut list, sheet-fit checks, banding totals, and a sheet-yield estimate.
-- `scripts/draw.py` — generates dimensioned SVG front and side elevations from the positioned part spec.
-- `scripts/render.py` — generates a self-contained three.js HTML preview for the part spec.
+- `scripts/carcass.py` — parametric spec builder for furniture carcasses, shelves, doors, drawers, rods, fixtures, and other parts; plus `cutlist_spec()`, `check_overlaps()`, and `check_facade_coverage()`.
+- `scripts/cutlist.py` — converts a JSON furniture spec into a validated cut list (md/csv/json/xlsx), sheet-fit checks, banding totals, and a sheet-yield estimate.
+- `scripts/draw.py` — dimensioned SVG plan, front/side elevations, and an open-state elevation for moving parts.
+- `scripts/render.py` — self-contained three.js HTML preview with motion (open/close) and explode toggles.
+- `scripts/assembly.py` — connection derivation, per-part drilling coordinates, build order, and a step-by-step assembly plan.
 - `scripts/sketchup_emit.py` — emits SketchUp build code for a Trimble SketchUp MCP backend, with unit conversion and part grouping.
-- `references/` — design, measurement, visualization, SketchUp integration, and deliverables guidance.
+- `scripts/packet.py` — assembles the SVG views + cut-list/assembly markdown into one print-clean A4 PDF (headless Chrome/Edge); no external skill dependency.
+- `scripts/package.py` — one command to regenerate the whole package from a project spec module, gated on `check_overlaps`.
+- `references/` — design, measurement, visualization, mechanisms, SketchUp integration, deliverables, and the Stage-6 skill-review reviewer.
 
 ## Using this skill with Claude
 
-### Claude Desktop
+### Download
 
-1. Copy this repository into Claude's skills directory so it can discover the skill:
+Two packaged downloads, both of which unzip to a `furniture-design/` folder:
+
+- **[`furniture-design.skill`](https://github.com/mhorvvitz/furniture-design-skill/raw/main/furniture-design.skill)** — the installable skill (SKILL.md, references, assets, scripts). This is the one to install.
+- **[`furniture-design-skill-main.zip`](https://github.com/mhorvvitz/furniture-design-skill/raw/main/furniture-design-skill-main.zip)** — the full repo snapshot, if you also want the README and this landing page.
+
+(A `.skill` file is just a zip — rename to `.zip` if your unzip tool won't open it directly.)
+
+### Install (Claude Desktop and Claude Code / CLI)
+
+1. Unzip the download and place the `furniture-design/` folder in Claude's skills directory:
    - Windows: `%USERPROFILE%\.claude\skills\furniture-design`
    - macOS/Linux: `~/.claude/skills/furniture-design`
-2. The folder should contain `SKILL.md` and the supporting project files.
-3. If your Claude Desktop build supports importing a packaged skill, you can also import `furniture-design.skill` instead of the folder.
-4. Restart Claude Desktop and start a new chat or project so the skill is discovered.
+2. Confirm the folder holds `SKILL.md` at its top level.
+3. Restart Claude (or your CLI session) and start a new chat so the skill is discovered.
+4. Ask for a furniture task — e.g. *"design me a 900 mm oak sideboard"* — and the skill activates.
 
-### Claude CLI / Claude Code
-
-1. Place this repository in the skills directory your CLI uses, or create a symlink to it there.
-2. Restart the CLI session so it reloads available skills.
-3. In a new session, ask for furniture-design tasks and the skill should be available.
+You can also symlink the repo into the skills directory instead of copying, so updates are picked up automatically.
 
 ### SketchUp MCP setup
 
@@ -116,8 +133,9 @@ There are two JSON shapes in this repo — don't confuse them:
 
 ```bash
 python3 scripts/cutlist.py spec.json --format md
-python3 scripts/cutlist.py spec.json --format csv -o cutlist.csv
+python3 scripts/cutlist.py spec.json --format csv  -o cutlist.csv
 python3 scripts/cutlist.py spec.json --format json
+python3 scripts/cutlist.py spec.json --format xlsx -o cutlist.xlsx   # needs openpyxl
 ```
 
 `cutlist.py` exits with a non-zero status if validation fails. Fix the spec before continuing.
@@ -169,6 +187,17 @@ If you have a Trimble SketchUp MCP connector available, `scripts/sketchup_emit.p
 
 The repo expects the SketchUp backend to handle the actual model assembly, style, camera, and `.skp` save.
 
+### 7. Regenerate the whole package with one command
+
+Author the piece as a small `<piece>_spec.py` that exposes `spec` (or a `build()` returning it), then let `package.py` rebuild every deliverable — cut list (all formats), 2D views, 3D render, assembly plan, and the packet PDF — after a `check_overlaps` gate:
+
+```bash
+python3 scripts/package.py my_piece_spec.py --out output/
+python3 scripts/package.py my_piece_spec.py --out output/ --only cutlist,views   # cheap incremental
+```
+
+Keep that spec module in the project — it's a source file, not scratch. To build only the packet PDF from existing views + markdown, call `scripts/packet.py` directly.
+
 ## References
 
 Use these docs for detailed workflow and discipline:
@@ -176,8 +205,10 @@ Use these docs for detailed workflow and discipline:
 - `references/measurement-intake.md` — what to measure and how to record it.
 - `references/construction-knowledge.md` — panel math, material rules, System-32, joinery, and edge banding.
 - `references/visualization.md` — 2D drawing conventions and the three.js render tier.
-- `references/sketchup-integration.md` — SketchUp MCP unit boundary, tool availability, and workspace model expectations.
+- `references/mechanisms.md` — lift-lids, flip-tops, and other moving-mass pieces: clearance-stack rule, strut/hinge sizing, racking reinforcement.
+- `references/sketchup-integration.md` — SketchUp MCP unit boundary, tool availability, the `.skp` download/validation pattern, and workspace model expectations.
 - `references/deliverables.md` — cut list schema, shop drawing package requirements, and pre-export checks.
+- `references/skill-review-agent.md` — the Stage-6 end-of-project reviewer that feeds improvements back to the skill.
 - `assets/joinery.json` — machine-readable drilling specs for Israeli-standard joinery (cam-and-dowel, confirmat, glued dowel, shelf pins, euro hinges). Verified against Häfele and Blum first-party sources.
 
 ## v2 roadmap

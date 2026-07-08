@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>furniture-design — a Claude skill for carpenter-ready plans</title>
+<meta name="description" content="A Claude skill that turns a furniture idea into a carpenter-ready package: dimensioned shop drawings, a validated cut list, joinery and hardware, and a 3D preview. Millimetre-first, Israeli shop conventions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDE8DD;      /* drafting vellum */
+    --paper-2:#E4DECF;    /* panel fill */
+    --ink:#1C1B18;        /* near-black warm */
+    --graphite:#5B5750;   /* secondary ink / hairlines */
+    --dim:#B0392E;        /* dimension red — from draw.py */
+    --blue:#1F6FEB;       /* rod blue — from draw.py, used sparingly */
+    --line:#C7BFAC;       /* light hairline on paper */
+    --disp:'Archivo',system-ui,sans-serif;
+    --body:system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+    line-height:1.55;-webkit-font-smoothing:antialiased;
+  }
+  /* drafting-sheet frame */
+  .sheet{max-width:1180px;margin:0 auto;padding:clamp(14px,3vw,34px);}
+  .frame{border:1.5px solid var(--ink);position:relative;padding:clamp(20px,4vw,52px);}
+  .frame::before{content:"";position:absolute;inset:6px;border:0.75px solid var(--graphite);pointer-events:none;}
+  .content{position:relative;z-index:1;}
+
+  .mono{font-family:var(--mono);}
+  .tick{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600;}
+  a{color:var(--blue);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  /* top strip */
+  .topbar{display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+    border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:clamp(26px,5vw,54px);flex-wrap:wrap;}
+  .wordmark{font-family:var(--mono);font-weight:600;font-size:14px;letter-spacing:.02em;}
+  .wordmark b{color:var(--dim);}
+  .topmeta{font-family:var(--mono);font-size:12px;color:var(--graphite);letter-spacing:.08em;}
+
+  /* hero */
+  .hero{display:grid;grid-template-columns:1.05fr 0.95fr;gap:clamp(24px,4vw,56px);align-items:center;}
+  .eyebrow{margin:0 0 18px;}
+  h1{
+    font-family:var(--disp);font-weight:800;font-size:clamp(38px,7vw,74px);line-height:0.98;
+    letter-spacing:-0.02em;margin:0 0 20px;
+  }
+  h1 .drop{color:var(--dim);}
+  .lede{font-size:clamp(17px,2.2vw,20px);max-width:34ch;color:#2c2a26;margin:0 0 30px;}
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+  .btn{
+    font-family:var(--mono);font-weight:600;font-size:14px;letter-spacing:.02em;
+    display:inline-flex;align-items:center;gap:10px;padding:14px 22px;border:1.5px solid var(--ink);
+    background:var(--ink);color:var(--paper);cursor:pointer;transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover{text-decoration:none;transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--dim);}
+  .btn.ghost{background:transparent;color:var(--ink);}
+  .btn.ghost:hover{box-shadow:4px 4px 0 var(--ink);}
+  .btn .sz{color:inherit;opacity:.6;font-weight:400;}
+
+  /* hero drawing */
+  .drawing{width:100%;height:auto;display:block;}
+  .drawing .paperfill{fill:var(--paper-2);stroke:var(--ink);stroke-width:1.4;}
+  .drawing .panel{fill:var(--paper-2);stroke:var(--ink);stroke-width:1.4;}
+  .drawing .dimline{stroke:var(--dim);stroke-width:1;}
+  .drawing .ext{stroke:var(--graphite);stroke-width:0.6;}
+  .drawing .dtext{fill:var(--dim);font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .drawing .plabel{fill:var(--graphite);font-family:'IBM Plex Mono',monospace;font-size:11px;}
+  /* Drawing is fully visible by default; motion is a pure enhancement that
+     always ends in the visible state (never relied on for content). */
+  @media (prefers-reduced-motion: no-preference){
+    .drawing .dimline,.drawing .ext{stroke-dasharray:600;stroke-dashoffset:600;animation:draw 1.1s ease .15s forwards;}
+    .drawing .dtext{opacity:0;animation:fadein .5s ease 1s forwards;}
+    @keyframes draw{to{stroke-dashoffset:0;}}
+    @keyframes fadein{from{opacity:0}to{opacity:1;}}
+  }
+
+  /* section scaffolding */
+  .section{margin-top:clamp(56px,9vw,110px);}
+  .sechead{display:flex;align-items:baseline;gap:16px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:34px;}
+  .sechead h2{font-family:var(--disp);font-weight:600;font-size:clamp(22px,3.2vw,30px);letter-spacing:-0.01em;margin:0;}
+  .sechead .no{font-family:var(--mono);color:var(--dim);font-size:13px;font-weight:600;}
+
+  /* feature callout grid */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);}
+  @media (max-width:820px){.grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:540px){.grid{grid-template-columns:1fr;}}
+  .cell{background:var(--paper);padding:24px 22px;}
+  .cell .num{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.1em;}
+  .cell h3{font-family:var(--disp);font-weight:600;font-size:18px;margin:10px 0 8px;}
+  .cell p{margin:0;font-size:14.5px;color:#39362f;}
+
+  /* install steps — a real sequence */
+  .steps{counter-reset:step;display:grid;gap:0;}
+  .step{display:grid;grid-template-columns:auto 1fr;gap:20px;padding:22px 0;border-top:1px solid var(--line);}
+  .step:last-child{border-bottom:1px solid var(--line);}
+  .step .idx{counter-increment:step;font-family:var(--mono);font-weight:600;color:var(--dim);font-size:14px;padding-top:2px;}
+  .step .idx::before{content:counter(step,decimal-leading-zero);}
+  .step h3{font-family:var(--disp);font-weight:600;font-size:18px;margin:0 0 8px;}
+  .step p{margin:0 0 12px;font-size:15px;color:#39362f;}
+  pre{
+    font-family:var(--mono);font-size:13px;background:var(--ink);color:#f3efe6;
+    padding:14px 16px;overflow-x:auto;margin:0;border-left:3px solid var(--dim);
+  }
+  pre .cm{color:#a79f8d;}
+  .os{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--graphite);margin:14px 0 6px;}
+
+  /* title block footer */
+  .titleblock{margin-top:clamp(56px,9vw,100px);border:1.5px solid var(--ink);display:grid;
+    grid-template-columns:2fr 1fr 1fr;font-family:var(--mono);font-size:12px;}
+  .tb{padding:14px 16px;border-right:1px solid var(--line);}
+  .titleblock .tb:last-child{border-right:none;}
+  .tb .k{color:var(--graphite);letter-spacing:.1em;text-transform:uppercase;font-size:10.5px;}
+  .tb .v{color:var(--ink);font-size:14px;font-weight:500;margin-top:3px;}
+  .tb .v b{color:var(--dim);}
+
+  @media (max-width:760px){
+    .hero{grid-template-columns:1fr;}
+    .hero .draw-wrap{order:-1;max-width:340px;}
+    .titleblock{grid-template-columns:1fr;}
+    .tb{border-right:none;border-bottom:1px solid var(--line);}
+    .titleblock .tb:last-child{border-bottom:none;}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+<div class="frame">
+<div class="content">
+
+  <div class="topbar">
+    <div class="wordmark">furniture&#8209;design <b>·</b> a Claude skill</div>
+    <div class="topmeta">UNITS: MM &nbsp;·&nbsp; ISRAELI SHOP CONVENTIONS</div>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <div class="eyebrow tick">Idea → buildable plan</div>
+      <h1>Describe the piece.<br>Get plans a <span class="drop">carpenter</span> can build from.</h1>
+      <p class="lede">A skill for Claude that holds your furniture in a disciplined millimetre spec, then emits the whole shop package — cut list, dimensioned drawings, joinery, hardware, a 3D preview, and a real <span class="mono">.skp</span>.</p>
+      <div class="cta-row">
+        <a class="btn" href="https://github.com/mhorvvitz/furniture-design-skill/raw/main/furniture-design.skill">
+          Download the skill <span class="sz">.skill · installable</span>
+        </a>
+        <a class="btn ghost" href="#install">How to install</a>
+      </div>
+    </div>
+
+    <div class="draw-wrap">
+      <!-- Signature: a dimensioned shop-drawing elevation, in the tool's own drafting language -->
+      <svg class="drawing" viewBox="0 0 460 600" role="img" aria-label="Dimensioned front elevation of a shelving unit, 800 by 1800 millimetres">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M1 1L9 5L1 9" fill="none" stroke="#B0392E" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <!-- carcass outer 160..380 x, 70..520 y (uniform scale 0.25 of 800x1800) -->
+        <rect class="paperfill" x="160" y="70" width="220" height="450"/>
+        <!-- interior void -->
+        <rect x="171" y="81" width="198" height="428" fill="#EDE8DD" stroke="none"/>
+        <!-- shelves (5px thick) -->
+        <rect class="panel" x="171" y="158" width="198" height="6"/>
+        <rect class="panel" x="171" y="246" width="198" height="6"/>
+        <rect class="panel" x="171" y="334" width="198" height="6"/>
+        <rect class="panel" x="171" y="422" width="198" height="6"/>
+        <!-- overall height dimension (left) -->
+        <line class="ext" x1="160" y1="70" x2="112" y2="70"/>
+        <line class="ext" x1="160" y1="520" x2="112" y2="520"/>
+        <line class="dimline" x1="120" y1="70" x2="120" y2="520" marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <text class="dtext" x="115" y="298" text-anchor="end" transform="rotate(-90 115 298)" style="text-anchor:middle">1800</text>
+        <!-- overall width dimension (bottom) -->
+        <line class="ext" x1="160" y1="520" x2="160" y2="560"/>
+        <line class="ext" x1="380" y1="520" x2="380" y2="560"/>
+        <line class="dimline" x1="160" y1="550" x2="380" y2="550" marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <text class="dtext" x="270" y="544" style="text-anchor:middle">800</text>
+        <!-- bay height dimension (right) -->
+        <line class="ext" x1="380" y1="164" x2="420" y2="164"/>
+        <line class="ext" x1="380" y1="246" x2="420" y2="246"/>
+        <line class="dimline" x1="410" y1="164" x2="410" y2="246" marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <text class="dtext" x="416" y="209" transform="rotate(-90 416 209)" style="text-anchor:middle">≈420</text>
+        <!-- part labels -->
+        <text class="plabel" x="270" y="96" style="text-anchor:middle">SHELF ×4 · 762×280</text>
+        <text class="plabel" x="150" y="300" text-anchor="end" transform="rotate(-90 150 300)" style="text-anchor:middle">SIDE · plywood_birch 18</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- WHAT YOU GET -->
+  <section class="section" id="package">
+    <div class="sechead"><span class="no">A/</span><h2>What lands in the package</h2></div>
+    <div class="grid">
+      <div class="cell"><div class="num">CUT LIST</div><h3>Validated BOM</h3><p>Every part with finished L×W×thickness, grain, and banding. Sheet-fit checked, edge-banding totalled. Export md, csv, json, or xlsx.</p></div>
+      <div class="cell"><div class="num">DRAWINGS</div><h3>Dimensioned sheets</h3><p>Plan, front and side elevations with real dimension chains — plus a print-clean packet PDF with a title block.</p></div>
+      <div class="cell"><div class="num">JOINERY</div><h3>Drilling coordinates</h3><p>Per-part hole positions from verified Häfele/Blum data — never guessed. Cam-and-dowel, confirmat, dowels, System-32.</p></div>
+      <div class="cell"><div class="num">PREVIEW</div><h3>Interactive 3D</h3><p>A self-contained three.js render for sign-off — real materials, soft shadows, and open/close toggles for moving parts.</p></div>
+      <div class="cell"><div class="num">ASSEMBLY</div><h3>Build order</h3><p>A reachability-sorted, step-by-step plan with the hardware list and tools — out-of-envelope joints flagged, never faked.</p></div>
+      <div class="cell"><div class="num">MODEL</div><h3>SketchUp .skp</h3><p>With the SketchUp MCP connected, a real editable model built from the same spec — mm converted only at the boundary.</p></div>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section class="section" id="install">
+    <div class="sechead"><span class="no">B/</span><h2>Add it to your Claude</h2></div>
+    <div class="steps">
+      <div class="step">
+        <div class="idx"></div>
+        <div>
+          <h3>Get the files</h3>
+          <p>Grab the installable skill, or the whole repo if you want the source and examples too.</p>
+          <div class="cta-row">
+            <a class="btn" href="https://github.com/mhorvvitz/furniture-design-skill/raw/main/furniture-design.skill">Download <span class="sz">.skill</span></a>
+            <a class="btn ghost" href="https://github.com/mhorvvitz/furniture-design-skill/raw/main/furniture-design-skill-main.zip">Download repo <span class="sz">.zip</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="idx"></div>
+        <div>
+          <h3>Unzip it into your skills folder</h3>
+          <p>Both files unzip to a <span class="mono">furniture-design/</span> folder. Put that folder where Claude looks for skills.</p>
+          <div class="os">Windows</div>
+          <pre>%USERPROFILE%\.claude\skills\furniture-design</pre>
+          <div class="os">macOS / Linux</div>
+          <pre>~/.claude/skills/furniture-design</pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="idx"></div>
+        <div>
+          <h3>Restart Claude and start a new chat</h3>
+          <p>Claude Code and Claude Desktop discover skills on startup. Confirm the folder holds <span class="mono">SKILL.md</span> at its top level, then reload.</p>
+          <pre><span class="cm"># Claude Code — verify it's discovered</span>
+claude   <span class="cm"># then ask: "design me a 900mm oak sideboard"</span></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="idx"></div>
+        <div>
+          <h3>Optional — connect SketchUp</h3>
+          <p>For the editable <span class="mono">.skp</span>, enable the Trimble SketchUp MCP connector. The skill drives it as the 3D backend; everything else works without it. See <a href="https://github.com/mhorvvitz/furniture-design-skill/blob/main/references/sketchup-integration.md">sketchup-integration.md</a>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DISCIPLINE / why -->
+  <section class="section" id="how">
+    <div class="sechead"><span class="no">C/</span><h2>The rule that keeps material out of the scrap pile</h2></div>
+    <p style="max-width:62ch;font-size:16.5px;color:#2c2a26;margin:0 0 18px;">
+      Never derive a real dimension from a photo. Images set style and intent; numbers come from a tape measure or a standard. The skill's whole job is to <em>hold, compute, cross-check, and lay out</em> those numbers — one millimetre spec, every view and the cut list derived from it, nothing hand-patched. Assumed numbers stay flagged until you confirm them.
+    </p>
+    <p class="mono" style="font-size:13px;color:var(--graphite);margin:0;">
+      docs/spec.md → carcass.py → positioned&#8209;part spec → cut list · drawings · assembly · 3D · .skp
+    </p>
+  </section>
+
+  <!-- TITLE BLOCK -->
+  <div class="titleblock">
+    <div class="tb"><div class="k">Project</div><div class="v">furniture&#8209;design — Claude skill</div></div>
+    <div class="tb"><div class="k">Units</div><div class="v"><b>MM</b></div></div>
+    <div class="tb"><div class="k">Source</div><div class="v"><a href="https://github.com/mhorvvitz/furniture-design-skill">GitHub ↗</a></div></div>
+  </div>
+
+</div>
+</div>
+</div>
+</body>
+</html>
