@@ -156,10 +156,59 @@ apply:
 4. **Style + camera**: apply the *Furniture / Product Studio* preset
    (`sketchup-styles`) and set a hero camera (`sketchup-camera`) — a camera is
    required before `save_model`.
-5. **Save**: `save_model` → share the `.skp` download link and the thumbnail.
+5. **Save + download in the same turn**: `save_model` returns a **time-limited**
+   `download_url` — download it to the project immediately (see "Getting the `.skp`
+   onto disk" below). Do not tell the user it can't be saved locally; it can.
 6. **Partial-failure aware**: `build_model` is not transactional. Build
    incrementally, inspect `model_snapshot` after each pass, and wrap risky
    operations in `try/except` so the model reaches a clean end-state.
+
+## Getting the `.skp` onto disk (learned the expensive way — don't rediscover it)
+
+`save_model` does **not** leave a file in the project; it returns a **time-limited
+`download_url`**. Three separate round-trips were wasted on this seam. The working
+pattern:
+
+1. **Download immediately, in the same turn as the final build.** The moment
+   `save_model` returns, fetch the URL to the project. Pass `keep_session: true`
+   on the build/save so the model stays alive for a re-save if the download fails.
+
+   ```powershell
+   # Windows (PowerShell)
+   Invoke-WebRequest -Uri "<download_url>" -OutFile "output\piece.skp"
+   ```
+   ```bash
+   # macOS / Linux
+   curl -L -o output/piece.skp "<download_url>"
+   ```
+
+2. **Mind the session + URL expiry.** The MCP session expires after **~30 minutes
+   of inactivity**, and the `download_url` is itself time-limited. If either has
+   gone stale, do **not** fight it — **rebuild from `sketchup_emit.py` and re-save**.
+   That is cheap: the mm spec is the source of truth, so the model is fully
+   reproducible from one `build_model` run. Never treat a stale URL as a reason to
+   block the deliverable.
+
+3. **Validate the downloaded file by header + size — not the OLE magic.** A modern
+   `.skp` (SketchUp 2021+, v{26.x}) is **not** an OLE compound file, so checking for
+   the legacy OLE magic `D0 CF 11 E0` gives a **false negative** and wastes a turn.
+   A valid modern `.skp` is:
+   - **> ~10 KB** (a truncated/failed download is far smaller);
+   - a **wide-char `SketchUp` version header** in the first bytes (UTF-16: `53 00
+     6B 00 65 00 74 00 63 00 68 00 55 00 70 00` — "S·k·e·t·c·h·U·p"); and
+   - contains an embedded **ZIP** — the `PK\x03\x04` signature (`50 4B 03 04`) —
+     holding `meta/meta.dat`.
+
+   ```bash
+   # quick sanity check
+   test $(stat -c%s output/piece.skp) -gt 10000 && \
+     head -c 64 output/piece.skp | grep -qa "S.k.e.t.c.h.U.p" && echo "looks valid"
+   ```
+
+4. **Don't decode the thumbnail to "verify" the model.** `save_model` returns a
+   large base64 thumbnail; decoding it inline to confirm the build is a token sink
+   and proves nothing about the geometry. Validate by the **bounding-box cross-check**
+   (mm ↔ inch, see the unit-boundary section) and the file header above instead.
 
 ## What SketchUp does NOT replace
 

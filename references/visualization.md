@@ -9,7 +9,13 @@ disagree with the numbers.
 **Default path**: build the positioned-part spec with `scripts/carcass.py` and
 emit the SVG with `scripts/draw.py` — it already implements the conventions
 below (scale, dimension chains, thickness as double lines, door-hiding via the
-`kind="door"` tag) and is verified on real pieces. Show the result with
+`kind="door"` tag) and is verified on real pieces. It offers three projections:
+`draw(spec, path)` for front + side elevations, `plan(spec, path)` for the
+top-down plan, and — for pieces with a moving part — `draw(spec, path,
+states=True)`, which adds an open-state side elevation for any part carrying a
+`motion` dict (a lift-lid hinge, a sliding drawer; see the 3D section for the
+`motion` schema). The scale fits **both** axes, so a low/wide piece (coffee table,
+bed, sideboard) no longer blows out the canvas width. Show the result with
 `show_widget`. Hand-write the SVG only for pieces outside the box-carcass
 envelope; then the conventions below are your spec.
 
@@ -83,10 +89,27 @@ Build rules:
   use numbers the 2D views don't.
 - Represent real thickness (panels are boxes of thickness `t`, not planes) so the
   proportions read true.
-- Optional: a toggle to explode the assembly (offset each part along its normal) —
-  useful for showing joinery and seeding the assembly drawing.
+- **Articulation** (`render.py` implements this): give a moving part a `motion`
+  dict and the emitter parents it to a `THREE.Group` and adds a toggle button —
+  the design question for a mechanism piece ("does the lid clear the stile? can I
+  reach the drawers open?") is answered live. Schema:
+  - `{"type": "hinge", "group": "lid", "pivot": [y, z], "angle": 100, "label": "Lift lid"}`
+    — rotates the group about the projected pivot (mm).
+  - `{"type": "slide", "group": "drawers", "vector": [0, 0, 380], "label": "Open drawers"}`
+    — translates the group along the vector (mm).
+  Parts sharing a `group` move together. No `motion` fields → the output is
+  byte-for-byte what it was before. The same `motion` dict drives `draw.py`'s
+  open-state 2D elevation, so 2D and 3D agree.
+- **Exploded view** is built in: `render.py` emits an Explode toggle that offsets
+  each part radially from the model centre — shows joinery and seeds the assembly
+  drawing.
 - One self-contained file. No `localStorage`/`sessionStorage` (unsupported in
   artifacts) — hold state in JS variables.
+- **CDN caveat for Artifacts**: the emitted page loads three.js r128 from a CDN,
+  which works in a browser tab or on GitHub Pages but is **blocked by the Artifact
+  tool's CSP** (no external hosts). If you publish the render *as an Artifact*,
+  inline the three.js source into the file; for `show_widget` / a normal browser,
+  the CDN link is fine.
 
 The render is for **approval and communication**, not measurement. The carpenter
 builds from the 2D dimensioned drawings and the cut list — and, once committed,

@@ -121,7 +121,10 @@ material and panel thicknesses; carcass construction; joinery; hardware (hinges,
 runners, shelf supports, legs, handles); edge banding; and — for built-ins —
 scribe/filler allowances against the un-square reality measured in stage 2.
 Log each resolution to the **Decisions** section of `docs/spec.md` with a
-one-line rationale, so a choice is never silently reversed later.
+one-line rationale, so a choice is never silently reversed later. **If the piece
+has a moving part** (lift-lid, flip-top, fold-down, TV lift, drawer under a well),
+also read `references/mechanisms.md` here — draw the mechanism envelope and swing
+arc *before* placing structure, and size any strut/hinge by its rules.
 
 The error that hides here is **material-thickness math**. A nominal 1000 mm-wide
 carcass in 18 mm panels has an internal width of 1000 − 2×18 = 964 mm, the shelf
@@ -166,6 +169,18 @@ Before exporting anything, run the consistency checks in
 `references/deliverables.md` (and the script's validator). If a number fails a
 check, fix it or flag it — do not ship a cut list you have not reconciled.
 
+**Regenerate the package with one command, and batch your changes.** Do not
+re-run the five emitters by hand after every tweak — that is where per-project
+glue gets rebuilt and deleted turn after turn. Instead:
+
+- Keep a per-project `<piece>_spec.py` beside the piece (see "The working spec")
+  and run `python scripts/package.py <piece>_spec.py --out output/` to rebuild the
+  whole package at once. It runs `check_overlaps` as a hard gate first (hard rule
+  12), so a clash blocks the package rather than shipping a stale one.
+- During iteration, **batch design changes** and regenerate only the cheap views
+  (`--only views` / `--only cutlist,views`) — mirror the tier staging rule: full
+  package (xlsx + PDF + `.skp`) once per *approved revision*, not per nudge.
+
 ## The script pipeline (use it first, not as a last resort)
 
 The `scripts/` directory is a tested pipeline, not optional extras. It exists
@@ -191,6 +206,16 @@ non-trivial piece).
 - `scripts/sketchup_emit.py` — tier-3 `build_model` code from the spec, encoding
   the live-verified patterns (mm→inch conversion, axis remap, component
   definitions, lofted rods, style preset, hero camera).
+- `scripts/packet.py` — assembles the SVG views + cut-list/assembly markdown into
+  one print-clean A4 PDF (the builder packet), shelling out to headless
+  Chrome/Edge. Self-contained: built-in markdown→HTML, no `pdf`/`xlsx` skill
+  dependency. If no browser is present it still writes the HTML, which is itself a
+  shippable deliverable.
+- `scripts/package.py` — **the one-command regenerator**. Point it at the project's
+  `<piece>_spec.py` and it rebuilds the whole package (cut list in md/csv/xlsx/json,
+  2D views, 3D render, assembly plan, packet PDF) after a hard `check_overlaps`
+  gate. `--only cutlist,views` for cheap incremental regeneration. Use it instead
+  of re-running the five emitters by hand.
 
 **Envelope**: the pipeline covers axis-aligned box-carcass work — panels, boxes,
 rods — which is most cabinetry, shelving, wardrobes, and simple leg-and-panel
@@ -251,6 +276,10 @@ caller's bounds on trust) are in `LIMITATIONS.md`.
   edge banding. Cross-references `assets/joinery.json` for drilling specs.
 - `references/visualization.md` — 2D drawing conventions and the tier-2 realistic
   3D preview (three.js product render, incl. the r128 orbit workaround).
+- `references/mechanisms.md` — mechanism pieces (lift-lids, flip-tops, fold-downs,
+  TV lifts, drawers-under-a-well): the clearance-stack rule, pivoting-mass torque /
+  gas-strut sizing, hinge selection, and racking reinforcement. Read at stage 4
+  when the piece has a moving part.
 - `references/sketchup-integration.md` — using the SketchUp MCP as the 3D backend:
   division of labour, the mm→inch unit boundary, part→geometry mapping, which
   bundled SketchUp skill owns which job, and the `.skp` deliverable path.
@@ -302,11 +331,15 @@ docs/spec.md                 authored inputs — SOURCE OF TRUTH for measurement
 positioned-part spec         every part: corner + size + material + grain,
 (the dict / spec.json)       computed with thickness math — source of truth for geometry
    │
-   ├─► draw.py           →  2D dimensioned SVG (elevations)
+   ├─► draw.py           →  2D dimensioned SVG (elevations + plan)
    ├─► render.py         →  3D three.js preview
-   ├─► cutlist.py        →  cut list / BOM        (reads spec.json)
+   ├─► cutlist.py        →  cut list / BOM  (md/csv/xlsx/json; reads spec.json)
    ├─► assembly.py       →  drilling coords + build order   ◄── assets/joinery.json
-   └─► sketchup_emit.py  →  build_model code → .skp
+   ├─► sketchup_emit.py  →  build_model code → .skp
+   └─► packet.py         →  print-clean packet PDF (views + cut list + assembly)
+
+   package.py orchestrates draw/render/cutlist/assembly/packet in one command,
+   gated on check_overlaps — run it to regenerate the whole package after a change.
 ```
 
 There are exactly **two authored sources of truth**: `docs/spec.md` (design inputs)
@@ -333,10 +366,19 @@ markdown; that arithmetic is what `carcass.py` exists to get correct). Every vie
 never edited directly.
 
 The flat cut-list JSON documented in `references/deliverables.md` is a derived
-format: generate it with `cutlist_parts()`, don't hand-transcribe (hand-write it
-only for out-of-envelope pieces that never had a positioned spec). The input
-numbers this spec is built from — the measurements with their sources
+format: generate it with `carcass.cutlist_spec()` (which builds the whole
+validatable document — materials catalog auto-split by thickness, banding, checks
+— not just the bare part rows of `cutlist_parts()`), don't hand-transcribe
+(hand-write it only for out-of-envelope pieces that never had a positioned spec).
+The input numbers this spec is built from — the measurements with their sources
 (`measured`/`standard`/`assumed`), and the joinery and hardware decisions — must
 trace back to `docs/spec.md`, not be independently declared here. When an input
 changes, update `docs/spec.md`, then rebuild this spec, then regenerate all views
 and the cut list from it, so nothing can drift apart.
+
+**The per-project spec module is a project file — keep it.** Author the piece as a
+small `<piece>_spec.py` that exposes `spec` (or a `build()` returning it), and keep
+it committed beside the piece, not treated as scratch to rebuild each turn.
+`scripts/package.py` regenerates the entire deliverable set from it in one command
+(and `--only` for incremental view-only rebuilds). Deleting it between turns is the
+anti-pattern that forced hand-rebuilding the emit glue on every change.

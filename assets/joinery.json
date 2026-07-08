@@ -4,7 +4,11 @@
     "hafele_minifix": "Häfele product pages P-00861332, P-00861333 (hafele.com.de/en); Häfele UK catalog 2014 p.295–305",
     "confirmat": "Snappy Tools 43750 spec; Rockler M7.0×50mm spec; FASTO confirmat sizing guide 2025",
     "euro_hinge": "Blum CLIP top catalog 2022/2023 (publications.blum.com); FineWoodworking forum verified dimensions; WoodWeb verified boring distances",
-    "dowel": "Excel Dowel FAQ (exceldowel.com); Australian Wood Review dowel guide; Wolfcraft Ø8mm kit specs"
+    "dowel": "Excel Dowel FAQ (exceldowel.com); Australian Wood Review dowel guide; Wolfcraft Ø8mm kit specs",
+    "kreg": "Kreg pocket-hole screw length + jig setting guides (kreg.com). Screw lengths cross-checked; pilot Ø from Kreg stepped-bit spec.",
+    "piano_hinge": "Generic continuous-hinge mounting guidance — NOT a specific product datasheet; treat as assumed and confirm against the hinge you buy.",
+    "blum_runner": "Blum/Hettich side-mount runner mounting guidance (publications.blum.com) — pattern is product-specific; use the runner's own hole template.",
+    "gas_strut": "Lid-stay / gas-strut sizing is a torque calculation; force value comes from the supplier calculator (Blum Aventos, Häfele Free, or strut maker). No fixed number here."
   },
 
   "cam_and_dowel": {
@@ -152,6 +156,60 @@
       "confidence": "high",
       "source": "euro_hinge"
     }
+  },
+
+  "pocket_screw": {
+    "he": "בורג כיס (Kreg)",
+    "description": "Pocket-hole joinery: an angled Ø9.5mm stepped pilot bored with a Kreg-class jig, screw driven into the mating part. Fast and strong for boxes and face frames; semi-visible holes (plug or hide inside the box).",
+    "suitable_materials": ["plywood_birch", "plywood_okoume", "mdf", "solid"],
+    "pilot": {
+      "stepped_bit": "Kreg-class stepped bit Ø9.5mm",
+      "collar_setting": "set the drill-collar and jig to the material thickness on the jig scale",
+      "confidence": "high",
+      "source": "kreg"
+    },
+    "screw_length_by_thickness_mm": {"12": 25, "15": 32, "18": 32, "20": 38, "25": 38, "30": 38},
+    "spacing_rule": "one screw ~50mm from each end, then every ~150mm along the joint",
+    "mounting": "clamp the joint, drive screws through the pockets into the mating part; no through-drilling on the show face",
+    "per_joint_hardware": ["pocket-hole screws (length per panel thickness)"],
+    "confidence": "high",
+    "source": "kreg"
+  },
+
+  "piano_hinge": {
+    "he": "ציר פסנתר (רצוף)",
+    "description": "Continuous (piano) hinge running the full length of a lid/door. Distributes load along the whole edge — the right choice for a flip-top lid.",
+    "suitable_materials": ["plywood_birch", "solid", "mdf"],
+    "screw": "Ø3–4mm screws, length ≤ 0.75 × panel thickness (no blow-through)",
+    "spacing_rule": "fasten EVERY pre-punched hole on a lid that bears weight",
+    "mounting": "mount per the hinge datasheet: knuckle/barrel centred on the pivot line and sitting proud of the surface, leaf inset from the edge so the lid clears as it swings. Confirm leaf width against panel thickness before buying.",
+    "per_joint_hardware": ["1× continuous piano hinge (cut to lid length)", "hinge screws (every hole)"],
+    "confidence": "assumed",
+    "source": "piano_hinge"
+  },
+
+  "drawer_slide_side_mount": {
+    "he": "מסילת צד כדורית",
+    "description": "Side-mount ball-bearing drawer runner (the v2 runner-mounting item). Cabinet member on the carcass side, drawer member on the box side.",
+    "suitable_materials": ["plywood_birch", "melamine", "mdf"],
+    "box_clearance": "box width = cabinet clear opening − 26mm total (13mm each side) — cross-check materials.json drawer_mounts.side_ball_bearing.opening_minus",
+    "front_setback": "set the cabinet member flush to the front edge (0–2mm back)",
+    "height_positions": "screw line at the box-side vertical centre; keep the runner's own hole pattern clear of box top/bottom",
+    "spacing_rule": "use the runner's factory hole pattern (front / middle / rear) — do not invent positions",
+    "mounting": "mount cabinet and drawer members level and parallel; pilot per the runner's own holes",
+    "per_joint_hardware": ["1× pair side-mount ball-bearing runners"],
+    "confidence": "moderate",
+    "source": "blum_runner"
+  },
+
+  "gas_strut": {
+    "he": "בוכנת גז (לדלת מתרוממת)",
+    "description": "Gas spring / lid stay that holds a lifting lid open and eases its fall. Sizing is a torque calculation, NOT a drilling coordinate.",
+    "procedure": "required strut force ≈ (lid mass M × g × d_cg) ÷ mounting-arm length, split across the number of struts, where d_cg is the hinge-to-centre-of-gravity distance. Mark the force ASSUMED and confirm with the supplier's lid-stay / gas-strut calculator (Blum Aventos, Häfele Free, or the strut maker's tool). Bracket geometry sets the open angle.",
+    "mounting": "one strut per side for lids over ~5kg or ~600mm; end fittings per the strut's ball-stud brackets",
+    "per_joint_hardware": ["gas struts (force per supplier calc)", "ball-stud end brackets"],
+    "confidence": "assumed",
+    "source": "gas_strut"
   },
 
   "wall_fixing": {

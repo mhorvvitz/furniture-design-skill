@@ -86,6 +86,22 @@ Drawer box internal width = opening − 2×runner clearance (runner-specific, of
 ~13 mm per side for ball-bearing, ~ per spec for undermount — read the runner's
 datasheet; do not guess the clearance).
 
+**Applied (false) fronts and the hidden-mechanism drawer.** The front and the box
+are not always the same height. Two cases the box-derived default gets wrong:
+
+- **Applied false front** (farmhouse styles, sink false-fronts, under-window
+  units): the face is a separate panel taller/wider than the box, screwed on from
+  inside the box. `carcass.drawers(front_mode="applied", front_h=…)` marks the note
+  so the shop knows it is applied, not integral.
+- **Mechanism owns the top of the interior** (a TV lift, a well, a slide-out
+  appliance): the front fills the facade for looks while the box rises only to the
+  mechanism floor. Set `front_h` (facade) and `box_h` (short box) separately —
+  `drawers()` warns if the box would rise above its own front.
+
+Default rule: **do not assume front height = box height.** When a mechanism or a
+style implies they differ, ask the user which they want before sizing — that one
+question avoids the most common drawer-proportion round-trip.
+
 ## System 32 (frameless cabinetry)
 
 The European frameless standard, and what most Israeli kitchen hardware assumes.

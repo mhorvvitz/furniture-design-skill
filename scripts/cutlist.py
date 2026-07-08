@@ -266,6 +266,74 @@ def render_csv(rows):
     return buf.getvalue()
 
 
+def write_xlsx(spec, rows, per_mat, mats, warnings, path):
+    """Write the cut list to an .xlsx workbook (openpyxl). One sheet: a part table
+    with a material column, then a material-summary block and any warnings.
+    Graceful error if openpyxl is not installed."""
+    try:
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side as XLSide
+    except ImportError:
+        fail("openpyxl not installed — run `pip install openpyxl`, or use --format csv")
+        sys.exit(2)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Cut list"
+    hdr_font = Font(bold=True, color="FFFFFF")
+    hdr_fill = PatternFill("solid", fgColor="4A5568")
+    sub_fill = PatternFill("solid", fgColor="E9E4D8")
+    thin = XLSide(style="thin", color="CCCCCC")
+    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+    ws.append([f"Cut list — {spec.get('project','(untitled)')}"])
+    ws["A1"].font = Font(bold=True, size=14)
+    ws.append([f"Units: {spec.get('units','mm')}"])
+    ws.append([])
+
+    cols = ["Part", "Qty", "Length", "Width", "Thk", "Material", "Grain", "Banding", "Notes"]
+    hrow = ws.max_row + 1
+    ws.append(cols)
+    for c in range(1, len(cols) + 1):
+        cell = ws.cell(row=hrow, column=c)
+        cell.font = hdr_font; cell.fill = hdr_fill; cell.border = border
+        cell.alignment = Alignment(horizontal="center")
+    for r in rows:
+        ws.append([r["name"], r["qty"], r["length"], r["width"], r["thickness"],
+                   r["material"], r["grain"], r["banding"], r["notes"]])
+        for c in range(1, len(cols) + 1):
+            ws.cell(row=ws.max_row, column=c).border = border
+
+    ws.append([])
+    srow = ws.max_row + 1
+    ws.append(["Material summary"])
+    ws.cell(row=srow, column=1).font = Font(bold=True)
+    hrow2 = ws.max_row + 1
+    ws.append(["Material", "Parts", "Area (m²)", "Banding (m)", "Sheets (est.)"])
+    for c in range(1, 6):
+        cell = ws.cell(row=hrow2, column=c)
+        cell.font = Font(bold=True); cell.fill = sub_fill
+    for mid, d in per_mat.items():
+        ws.append([mats[mid]["name"], d["parts"], d["area"], d["band_m"], d["sheets_est"]])
+
+    ws.append([])
+    ws.append(["Sheet count is a heuristic estimate, not an optimised cut plan — "
+               "use OpenCutList or CutList Optimizer for production nesting."])
+    if warnings:
+        ws.append([])
+        ws.append(["Warnings"]); ws.cell(row=ws.max_row, column=1).font = Font(bold=True)
+        for w in warnings:
+            ws.append([w])
+
+    # column widths
+    widths = [26, 6, 9, 9, 6, 24, 8, 12, 30]
+    for i, wd in enumerate(widths, 1):
+        ws.column_dimensions[chr(64 + i)].width = wd
+    ws.freeze_panes = f"A{hrow + 1}"
+    wb.save(path)
+    return path
+
+
 def render_json(spec, rows, per_mat, warnings):
     return json.dumps({
         "project": spec.get("project"),
@@ -281,7 +349,7 @@ def render_json(spec, rows, per_mat, warnings):
 def main():
     ap = argparse.ArgumentParser(description="Generate a validated cut list from a spec JSON.")
     ap.add_argument("spec")
-    ap.add_argument("--format", choices=["md", "csv", "json"], default="md")
+    ap.add_argument("--format", choices=["md", "csv", "json", "xlsx"], default="md")
     ap.add_argument("-o", "--out")
     args = ap.parse_args()
 
@@ -296,6 +364,16 @@ def main():
         sys.exit(1)
 
     rows, per_mat = summarise(spec, mats)
+
+    if args.format == "xlsx":
+        out = args.out or "cutlist.xlsx"
+        write_xlsx(spec, rows, per_mat, mats, warnings, out)
+        print(f"wrote {out}")
+        if warnings:
+            for w in warnings:
+                print(f"WARNING: {w}", file=sys.stderr)
+        return
+
     if args.format == "md":
         text = render_md(spec, rows, per_mat, mats, warnings)
     elif args.format == "csv":

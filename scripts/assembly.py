@@ -87,8 +87,43 @@ def _face_contact(a, b, tolerance=2.0):
     return max(contacts, key=lambda c: c[2])
 
 
-def derive_connections(spec, style="frameless_kd"):
-    """Find all touching part pairs and assign joint types from joinery.json."""
+# The carcass vocabulary assembly.py actually understands. A connection between
+# two of these is classified with confidence; anything outside it (a Lid, a
+# BackApron, a Leg, an Upright…) is flagged "default_assumed" so a guessed joint
+# is never presented as a verified one. (P0-3)
+KNOWN_DEFNS = {
+    "Side", "Top", "Bottom", "FixedPanel", "Divider", "Back", "Shelf",
+    "DrawerMullion", "DrawerBoxSide", "DrawerBoxFB", "DrawerBottom", "DrawerFront",
+}
+
+# Joints for which this script emits real drilling coordinates. Everything else
+# (piano_hinge, pocket_screw, gas_strut, drawer_slide_side_mount) is a "mount per
+# datasheet / procedure" joint — listed with its guidance, not fake hole coords.
+DRILLED_JOINTS = {"cam_and_dowel", "confirmat", "glued_dowel"}
+
+
+def _joint_override(a, b, joint_overrides):
+    """An explicit joint wins over classification: a part's own `joint` field, or
+    a (defn_a, defn_b) entry in joint_overrides. Returns the joint string (which
+    may be "none" to suppress the connection) or None."""
+    for p in (a, b):
+        if p.get("joint"):
+            return p["joint"]
+    if joint_overrides:
+        na, nb = a.get("defn", ""), b.get("defn", "")
+        for pair in ((na, nb), (nb, na)):
+            if pair in joint_overrides:
+                return joint_overrides[pair]
+    return None
+
+
+def derive_connections(spec, style="frameless_kd", joint_overrides=None):
+    """Find all touching part pairs and assign joint types.
+
+    Precedence: an explicit override (part `joint` field or `joint_overrides`
+    dict) > carcass-vocabulary classification > the style default (flagged
+    'default_assumed'). A joint of "none" suppresses the connection (correct for a
+    lid resting on an apron, or an applied front handled by its own box)."""
     jnr = joinery_data()
     defaults = jnr["_default_by_style"].get(style, jnr["_default_by_style"]["frameless_kd"])
     parts = spec["parts"]
@@ -97,8 +132,8 @@ def derive_connections(spec, style="frameless_kd"):
     for i in range(len(parts)):
         for j in range(i + 1, len(parts)):
             a, b = parts[i], parts[j]
-            # Skip rods, doors, drawer fronts for structural connections
-            if a.get("kind") in ("rod",) or b.get("kind") in ("rod",):
+            # Skip rods, doors, drawer fronts, and non-cut fixtures
+            if a.get("kind") in ("rod", "fixture") or b.get("kind") in ("rod", "fixture"):
                 continue
             if a.get("kind") == "door" or b.get("kind") == "door":
                 continue
@@ -108,8 +143,16 @@ def derive_connections(spec, style="frameless_kd"):
                 continue
 
             axis, side, area = contact
-            # Classify the joint
-            joint_type = _classify_joint(a, b, defaults, jnr)
+
+            override = _joint_override(a, b, joint_overrides)
+            if override == "none":
+                continue
+            if override:
+                joint_type, classification = override, "specified"
+            else:
+                joint_type = _classify_joint(a, b, defaults, jnr)
+                known = a.get("defn", "") in KNOWN_DEFNS and b.get("defn", "") in KNOWN_DEFNS
+                classification = "vocabulary" if known else "default_assumed"
 
             connections.append({
                 "part_a": _part_label(a, i),
@@ -120,6 +163,7 @@ def derive_connections(spec, style="frameless_kd"):
                 "contact_side": side,
                 "contact_area_mm2": round(area),
                 "joint_type": joint_type,
+                "classification": classification,
             })
 
     return connections
@@ -192,8 +236,10 @@ def generate_hole_schedule(spec, connections, style="frameless_kd"):
 
     for conn in connections:
         jt = conn["joint_type"]
-        if jt == "dado_groove":
-            # Groove joints noted but no drilling coords in v1
+        # Groove joints and mount-per-datasheet joints (piano hinge, pocket screw,
+        # gas strut, drawer slide) carry no face/edge drilling coords here — they
+        # are covered by the hardware list and the mechanism-notes section.
+        if jt not in DRILLED_JOINTS:
             continue
         if jt not in jnr:
             continue
@@ -495,9 +541,9 @@ def _step_name(defn, kind):
 # Phase 4: Document output
 # ---------------------------------------------------------------------------
 
-def generate_assembly_document(spec, style="frameless_kd"):
+def generate_assembly_document(spec, style="frameless_kd", joint_overrides=None):
     """Produce a complete assembly plan as Markdown."""
-    connections = derive_connections(spec, style)
+    connections = derive_connections(spec, style, joint_overrides)
     hole_schedule = generate_hole_schedule(spec, connections, style)
     build_order = generate_build_order(spec)
     jnr = joinery_data()
@@ -510,6 +556,15 @@ def generate_assembly_document(spec, style="frameless_kd"):
     lines.append(f"Construction style: {style}")
     lines.append(f"Joint method: {jnr['_default_by_style'].get(style, {}).get('carcass_joints', 'see joinery.json')}")
     lines.append(f"")
+
+    # Out-of-envelope warning block (P0-3): any joint assigned by the style
+    # default to parts outside assembly.py's carcass vocabulary is a GUESS.
+    _emit_out_of_envelope_warning(lines, connections)
+
+    # Mechanism & hardware notes: joints that mount per datasheet / a procedure
+    # (piano hinge, pocket screw, gas strut, drawer slide) rather than by drilled
+    # coordinates.
+    _emit_mechanism_notes(lines, connections, jnr)
 
     # Tools needed
     lines.append(f"## Tools needed")
@@ -611,6 +666,61 @@ def _emit_system32(lines, instr):
     lines.append(f"    - [confidence: {instr['confidence']}]")
 
 
+def _emit_out_of_envelope_warning(lines, connections):
+    """Prominent block for connections whose joint was assigned by the style
+    default to parts outside the carcass vocabulary — a guess, flagged as one."""
+    flagged = [c for c in connections if c.get("classification") == "default_assumed"]
+    if not flagged:
+        return
+    parts = sorted({c["part_a"] for c in flagged} | {c["part_b"] for c in flagged})
+    lines.append(f"> ⚠️ **REVIEW REQUIRED — {len(flagged)} joint(s) assigned by default, not verified.**")
+    lines.append(f">")
+    lines.append(f"> These connections involve parts outside this script's carcass")
+    lines.append(f"> vocabulary ({', '.join(sorted(set(p.rsplit('_', 1)[0] for p in parts)))}). Each was given")
+    lines.append(f"> the **style default** joint as a placeholder — that is a guess, not an")
+    lines.append(f"> engineered choice. **Review and set the real joint for each before building**")
+    lines.append(f"> (pass `joint=` on the part in the spec, or `joint_overrides` to the plan):")
+    lines.append(f">")
+    for c in flagged:
+        lines.append(f"> - {c['part_a']} ↔ {c['part_b']} → assigned `{c['joint_type']}` (assumed)")
+    lines.append(f"")
+
+
+def _emit_mechanism_notes(lines, connections, jnr):
+    """Guidance for mount-per-datasheet / procedure joints present in the plan."""
+    present = []
+    seen = set()
+    for c in connections:
+        jt = c["joint_type"]
+        if jt in DRILLED_JOINTS or jt == "dado_groove" or jt in seen:
+            continue
+        if jt in jnr:
+            present.append(jt)
+            seen.add(jt)
+    if not present:
+        return
+    lines.append(f"## Mechanism & hardware notes")
+    lines.append(f"")
+    lines.append(f"These joints are mounted per the hardware datasheet or a sizing "
+                 f"procedure — no fixed drilling coordinates are emitted for them:")
+    lines.append(f"")
+    for jt in present:
+        spec = jnr[jt]
+        he = spec.get("he", "")
+        lines.append(f"### {jt}" + (f" — {he}" if he else ""))
+        if spec.get("description"):
+            lines.append(f"{spec['description']}")
+        if spec.get("procedure"):
+            lines.append(f"- **Procedure**: {spec['procedure']}")
+        if spec.get("mounting"):
+            lines.append(f"- **Mounting**: {spec['mounting']}")
+        if spec.get("spacing_rule"):
+            lines.append(f"- **Spacing**: {spec['spacing_rule']}")
+        conf = spec.get("confidence", "unknown")
+        lines.append(f"- [confidence: {conf}] — verify against the actual product datasheet.")
+        lines.append(f"")
+
+
 def _emit_hardware_list(lines, connections, jnr):
     hw_counts = {}
     for conn in connections:
@@ -670,9 +780,9 @@ def _emit_step_instructions(lines, step, spec, connections, jnr, style):
         lines.append(f"1. Position and fix per the drilling schedule above.")
 
 
-def write_assembly_plan(spec, path, style="frameless_kd"):
+def write_assembly_plan(spec, path, style="frameless_kd", joint_overrides=None):
     """Write the assembly plan to a Markdown file."""
-    doc = generate_assembly_document(spec, style)
+    doc = generate_assembly_document(spec, style, joint_overrides)
     with open(path, "w", encoding="utf-8") as f:
         f.write(doc)
     return path

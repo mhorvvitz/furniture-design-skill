@@ -25,11 +25,38 @@ Known v1 simplifications (flagged, not hidden):
 """
 from collections import OrderedDict
 
+# Legacy fallback palette; live colours come from assets/materials.json via
+# carcass.material_color, so a new material added to the data file shows up here
+# without editing this map.
 _MATCOLORS = {
     "plywood_birch": (220, 195, 154), "plywood_okoume": (216, 180, 140),
     "plywood_poplar": (217, 199, 162), "melamine": (238, 236, 230),
     "mdf": (217, 205, 184), "hardboard": (205, 180, 136), "steel": (184, 188, 194),
 }
+
+
+def _emit_mat(p):
+    """The material key a part is COLOURED by in the model. Fixtures render in a
+    single muted 'fixture' tone regardless of their real material."""
+    return "fixture" if p.get("kind") == "fixture" else p["material"]
+
+
+def _color_for(mat):
+    """Resolve an emit-material key to an (r,g,b), preferring the data file."""
+    try:
+        from carcass import material_color, fixture_default_color
+    except Exception:
+        try:
+            from .carcass import material_color, fixture_default_color
+        except Exception:
+            material_color = lambda *a, **k: None
+            fixture_default_color = lambda: (58, 58, 62)
+    if mat == "fixture":
+        return tuple(int(c) for c in fixture_default_color())
+    c = material_color(mat)
+    if c:
+        return tuple(int(x) for x in c)
+    return _MATCOLORS.get(mat, (200, 195, 185))
 
 _HELPERS = '''
 IN = 25.4
@@ -176,7 +203,7 @@ def _defn_names(parts):
     for p in parts:
         if p.get("kind") == "rod":
             continue
-        key = (p["defn"], round(p["sx"], 1), round(p["sy"], 1), round(p["sz"], 1), p["material"])
+        key = (p["defn"], round(p["sx"], 1), round(p["sy"], 1), round(p["sz"], 1), _emit_mat(p))
         geo_groups.setdefault(key, []).append(p)
     base_to_keys = OrderedDict()
     for key in geo_groups:
@@ -195,13 +222,17 @@ def emit(spec, piece_var="Piece"):
     O = spec["overall"]
     parts = spec["parts"]
     geo_groups, name_for_key = _defn_names(parts)
-    materials_used = sorted({p["material"] for p in parts if p.get("kind") != "rod"} | {"steel"} & {p["material"] for p in parts if p.get("kind") == "rod"} | {p["material"] for p in parts})
+    # every emit-material used by a non-rod part (fixtures map to 'fixture'),
+    # plus 'steel' when any rod is present (rods are always steel).
+    materials_used = {_emit_mat(p) for p in parts if p.get("kind") != "rod"}
+    if any(p.get("kind") == "rod" for p in parts):
+        materials_used.add("steel")
 
     lines = [_HELPERS, ""]
     lines.append("# --- materials ---")
     lines.append("_mats = {}")
     for m in sorted(materials_used):
-        r, g, b = _MATCOLORS.get(m, (200, 195, 185))
+        r, g, b = _color_for(m)
         lines.append(f'_mats[{m!r}] = get_or_create_material({m!r}, {r}, {g}, {b})')
     lines.append("")
     lines.append(f'top = Group()')

@@ -131,11 +131,25 @@ Confidence this is fully understood, not a hidden bug pile: high.
    tested** — there was no live scenario in which to trigger the failure path
    deliberately once approval was granted. Confidence the documented procedure
    is sound: moderate (it's straightforward, but untested is untested).
-5. **Only two shapes have ever been tested end-to-end** (bookshelf, closet).
-   Both are box-carcass constructions sharing a lot of structural DNA. A third,
-   structurally different project (a table with legs, say, or a kitchen run)
-   is the next real test of generality — nothing here proves the skill
-   generalizes beyond "cabinets built from panels."
+5. **Three shapes tested end-to-end** (bookshelf, closet, and — new — a
+   leg-and-apron flip-top coffee table with a hidden TV, piano-hinged lid, gas
+   struts, and two farmhouse drawers). The coffee table was the first genuinely
+   out-of-envelope piece and the first mechanism piece, and it exercised the
+   generality boundary hard:
+   - **Generalized cleanly**: the `Carcass.add()` escape hatch (every part placed
+     via `add()`), `check_overlaps()`, `cutlist.py` validation, and the
+     `sketchup_emit.py` mm→inch/axis seam (bbox cross-check exact).
+   - **Did not, and were fixed in this pass**: `draw.py` sized by height alone
+     (blew the canvas on a low/wide piece — now fits both axes); `assembly.py`
+     silently classified the piano hinge and pocket-screwed boxes as glued dowels
+     (now flags out-of-envelope joints loudly + honours `joint=` overrides);
+     `drawers()` couldn't do a tall applied front over a short mechanism-clearing
+     box (now parameterized). The mechanism vocabulary (`kind="fixture"`, `joint=`,
+     `motion=`, `front_h`/`box_h`) was added so the emitters extend to
+     out-of-envelope pieces instead of being rebuilt by hand.
+   Still unproven beyond this: curved/turned/angled work and real chair joinery —
+   nothing here shows the skill generalizes past axis-aligned panels + simple
+   leg-and-apron structure.
 
 ## What "finished" would additionally require
 

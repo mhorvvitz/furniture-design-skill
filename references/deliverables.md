@@ -12,12 +12,29 @@ are computed deterministically rather than reasoned out. Reason about the design
 let the script do the counting.
 
 **Where this JSON comes from**: if the piece was built with `carcass.py` (the
-default), derive the `parts` array with `carcass.cutlist_parts(spec)` — it
-collapses the positioned spec into this schema and auto-disambiguates any part
-name reused across different sizes. Never hand-transcribe dimensions from the
-positioned spec into this file; that re-introduces exactly the arithmetic errors
-the pipeline exists to prevent. Hand-write this JSON only for out-of-envelope
-pieces that have no positioned spec.
+default), build the **whole** document with `carcass.cutlist_spec(spec, banding,
+notes)` — it produces the materials catalog *and* the parts array in one call.
+Critically, it **auto-splits the materials catalog by `(material_id, thickness)`**,
+so one nominal material used at several thicknesses (white-oak veneer at 30 and 20,
+ply at 20 and 15, solid oak at 60 and 20) becomes distinct catalog entries with the
+right sheet/kerf/trim pulled from `assets/materials.json` — the case that has no
+compliant hand-free path otherwise. Non-cut parts (`kind="rod"`/`"fixture"`) are
+excluded automatically. You supply only the judgement calls:
+
+```python
+from carcass import cutlist_spec
+cl = cutlist_spec(spec,
+                  banding={"Top": ["front"], "Side": ["front"]},   # by defn name
+                  notes={"Side": "system-32 holes both rows"})
+json.dump(cl, open("cutlist_spec.json", "w"), ensure_ascii=False, indent=2)
+```
+
+`banding`/`notes` are dicts keyed by part `defn` name — the LLM never does the
+arithmetic. `cutlist_parts()` is the lower-level helper (bare part rows, no
+materials catalog); prefer `cutlist_spec()` for anything you will actually validate
+and ship. Never hand-transcribe dimensions from the positioned spec into this file;
+that re-introduces exactly the arithmetic errors the pipeline exists to prevent.
+Hand-write this JSON only for out-of-envelope pieces that have no positioned spec.
 
 ### Spec JSON the script consumes
 
@@ -86,18 +103,21 @@ Field notes:
 ### Running it
 
 ```bash
-python3 scripts/cutlist.py spec.json --format md      # human table to stdout
+python3 scripts/cutlist.py spec.json --format md              # human table to stdout
 python3 scripts/cutlist.py spec.json --format csv -o cutlist.csv
-python3 scripts/cutlist.py spec.json --format json    # machine-readable, for the xlsx step
+python3 scripts/cutlist.py spec.json --format json            # machine-readable
+python3 scripts/cutlist.py spec.json --format xlsx -o cutlist.xlsx   # spreadsheet
 ```
 
 The script **exits non-zero and prints errors** if any part fails validation
 (non-positive dimension, part larger than its sheet, unknown material). Treat a
 non-zero exit as a stop: fix the spec, do not ship.
 
-Then build the spreadsheet with the **`xlsx` skill** from the script's output
-(one row per part, grouped by material, with a totals/summary block and the
-sheet-yield estimate). Do not hand-roll spreadsheet mechanics.
+The **spreadsheet is built by the script itself** — `--format xlsx` (openpyxl:
+one part table with a material column, a material-summary block, and the sheet
+estimate; it prints an install hint and falls back to `--format csv` if openpyxl
+is missing). Do not hand-roll spreadsheet mechanics, and do not reach for a
+separate `xlsx` skill — it does not exist in this environment; this is the path.
 
 ### Honesty about nesting
 
@@ -108,7 +128,24 @@ the industry-standard tool for the job and this skill does not try to beat it.
 
 ## 2 — Dimensioned shop drawings (PDF)
 
-Render with the **`pdf` skill**. The package contains:
+Assemble the packet with **`scripts/packet.py`**, not a separate `pdf` skill
+(which does not exist in this environment). It inlines the SVG views (from
+`draw.py`: `plan()` + `draw()` elevations) and the cut-list / assembly markdown
+into one print-clean A4-landscape HTML with a title block, then shells out to
+headless Chrome/Edge to print it to PDF:
+
+```bash
+python3 scripts/packet.py -o output/packet.pdf \
+    --project "Living-room wall unit" --overall 1000x2000x600 --rev "Rev A" \
+    --views output/plan.svg output/front.svg \
+    --md output/cutlist.md output/assembly.md \
+    --legend "mel18=#ececec; back4=#8a7a5c"
+```
+
+If no browser is found it still writes `packet.html` — that HTML is itself a
+shippable deliverable (open it, Ctrl-P → Save as PDF). In practice you rarely call
+this directly: `scripts/package.py` regenerates the packet alongside every other
+deliverable in one command. The package contains:
 
 - **Title block**: project name, date, "Units: mm", overall dimensions, material
   legend, revision/version.
@@ -149,6 +186,13 @@ rest are judgement.
    no nominal envelope number reused as a cut size.
 5. **Openings fit fronts**: door/drawer faces + reveals match their openings; no
    negative reveal, no collision between adjacent fronts.
+5b. **Facade fully covered** (script-assisted): run
+    `carcass.check_facade_coverage(spec)`. It projects every part on the visible
+    face and reports any hole larger than the reveal gap that no front/rail/stile/
+    leg covers — the class of bug where a divider stopped short (to clear a
+    mechanism) leaves a visible gap between two fronts. Reveals pass; real holes
+    fail. Open-front pieces (bookshelves) legitimately flag their open bays —
+    treat those as expected, like a `check_overlaps` rebate flag.
 6. **Grain direction** set on every visible woodgrain part.
 7. **Edge banding** specified on every visible edge.
 8. **Hardware fits**: drawer-box clearances match the chosen runner; hinge overlay
@@ -166,3 +210,22 @@ rest are judgement.
 If any check fails, fix the spec and regenerate the cut list and drawings from it.
 Never reconcile by editing a single output by hand — the spec is the source of
 truth.
+
+## Publishing the package (optional)
+
+Not every project publishes, but when the user wants a shareable link, the pattern
+that worked: a small GitHub Pages site under `docs/` — `docs/index.html` landing
+page, deliverables under `docs/downloads/*` (the PDF, xlsx, `.skp`, an embedded
+model-viewer iframe), and a `.nojekyll` file so Pages serves the assets verbatim.
+Two gotchas that each cost a round-trip:
+
+- **`.gitignore` inline comments don't work.** `output/  # generated` does *not*
+  ignore `output/` — the comment becomes part of the pattern. Put comments on their
+  own line.
+- **Enabling Pages via the API needs piped JSON.** `gh api -f` nested params fail;
+  pipe the body instead:
+  `echo '{"source":{"branch":"main","path":"/docs"}}' | gh api -X PUT repos/OWNER/REPO/pages --input -`.
+
+Keep the per-project spec scripts either committed or consciously local — decide,
+don't leave it ambiguous. The `.skp` and PDFs are build outputs; the `<piece>_spec.py`
+is source.
