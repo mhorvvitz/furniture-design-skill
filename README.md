@@ -67,6 +67,24 @@ Change an input in `docs/spec.md` first, then rebuild the positioned spec, then 
 - `scripts/package.py` — one command to regenerate the whole package from a project spec module, gated on `check_overlaps`.
 - `references/` — design, measurement, visualization, mechanisms, SketchUp integration, deliverables, and the Stage-6 skill-review reviewer.
 
+## Examples
+
+Three real pieces, each run end-to-end through the pipeline. Every folder holds
+its `*_spec.py` and the full generated package — cut list (md/csv/json/xlsx),
+plan + elevations (SVG), 3D preview (HTML), assembly plan, and the packet PDF.
+
+| Example | Piece | Size (mm) | Material | Shows off |
+|---|---|---|---|---|
+| [`examples/bookshelf`](examples/bookshelf) | Birch bookshelf | 800 × 1800 × 300 | Birch plywood | The core box-carcass case: sides/top/bottom/back + adjustable shelves |
+| [`examples/table`](examples/table) | Oak dining table | 1600 × 750 × 900 | Solid oak + oak-veneer top | Out-of-envelope leg-and-apron built with `add()`; solid-wood + veneer materials |
+| [`examples/closet`](examples/closet) | Melamine wardrobe | 1200 × 2400 × 600 | White melamine | System-32 built-in: centre divider, hanging rod, 5 shelves, two overlay doors |
+
+Regenerate any of them with:
+
+```bash
+python scripts/package.py examples/table/table_spec.py --out examples/table
+```
+
 ## Using this skill with Claude
 
 ### Download

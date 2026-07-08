@@ -1,0 +1,6 @@
+part,qty,length_mm,width_mm,thickness_mm,material,grain,banding,notes
+Side,2,1800,300,18,plywood_birch 18mm / דיקט בירץ׳,length,front,
+Bottom,1,764,300,18,plywood_birch 18mm / דיקט בירץ׳,length,front,
+Top,1,764,300,18,plywood_birch 18mm / דיקט בירץ׳,length,front,
+Back,1,1764,764,4,hardboard 4mm / מזונית,none,,
+Shelf,4,762,280,18,plywood_birch 18mm / דיקט בירץ׳,length,front,

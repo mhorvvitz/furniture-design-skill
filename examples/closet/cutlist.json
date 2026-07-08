@@ -1,0 +1,120 @@
+{
+  "project": "Melamine wardrobe",
+  "units": "mm",
+  "parts": [
+    {
+      "name": "Side",
+      "qty": 2,
+      "length": 2400,
+      "width": 600,
+      "thickness": 18,
+      "material": "melamine 18mm / סיבית מלמין",
+      "material_id": "melamine_18",
+      "grain": "length",
+      "banding": "",
+      "notes": ""
+    },
+    {
+      "name": "Bottom",
+      "qty": 1,
+      "length": 1164,
+      "width": 600,
+      "thickness": 18,
+      "material": "melamine 18mm / סיבית מלמין",
+      "material_id": "melamine_18",
+      "grain": "length",
+      "banding": "",
+      "notes": ""
+    },
+    {
+      "name": "Top",
+      "qty": 1,
+      "length": 1164,
+      "width": 600,
+      "thickness": 18,
+      "material": "melamine 18mm / סיבית מלמין",
+      "material_id": "melamine_18",
+      "grain": "length",
+      "banding": "",
+      "notes": ""
+    },
+    {
+      "name": "Back",
+      "qty": 1,
+      "length": 2364,
+      "width": 1164,
+      "thickness": 4,
+      "material": "hardboard 4mm / מזונית",
+      "material_id": "hardboard_4",
+      "grain": "none",
+      "banding": "",
+      "notes": ""
+    },
+    {
+      "name": "Divider",
+      "qty": 1,
+      "length": 2364,
+      "width": 600,
+      "thickness": 18,
+      "material": "melamine 18mm / סיבית מלמין",
+      "material_id": "melamine_18",
+      "grain": "length",
+      "banding": "",
+      "notes": ""
+    },
+    {
+      "name": "FixedPanel",
+      "qty": 1,
+      "length": 580,
+      "width": 571,
+      "thickness": 18,
+      "material": "melamine 18mm / סיבית מלמין",
+      "material_id": "melamine_18",
+      "grain": "length",
+      "banding": "front",
+      "notes": ""
+    },
+    {
+      "name": "Shelf",
+      "qty": 5,
+      "length": 580,
+      "width": 571,
+      "thickness": 18,
+      "material": "melamine 18mm / סיבית מלמין",
+      "material_id": "melamine_18",
+      "grain": "length",
+      "banding": "front",
+      "notes": ""
+    },
+    {
+      "name": "Door",
+      "qty": 2,
+      "length": 2358,
+      "width": 596,
+      "thickness": 18,
+      "material": "melamine 18mm / סיבית מלמין",
+      "material_id": "melamine_18",
+      "grain": "length",
+      "banding": "all",
+      "notes": ""
+    }
+  ],
+  "material_summary": {
+    "melamine_18": {
+      "parts": 13,
+      "area": 10.493,
+      "band": 15296.0,
+      "sheets_est": 5,
+      "band_m": 15.3
+    },
+    "hardboard_4": {
+      "parts": 1,
+      "area": 2.752,
+      "band": 0.0,
+      "sheets_est": 1,
+      "band_m": 0.0
+    }
+  },
+  "warnings": [],
+  "nesting_note": "Sheet count is a heuristic estimate. Use OpenCutList / CutList Optimizer for a production cut plan."
+}

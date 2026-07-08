@@ -1,0 +1,91 @@
+{
+  "project": "Oak dining table",
+  "units": "mm",
+  "parts": [
+    {
+      "name": "Top",
+      "qty": 1,
+      "length": 1600,
+      "width": 900,
+      "thickness": 30,
+      "material": "white_oak_veneer 30mm / פורניר אלון לבן",
+      "material_id": "white_oak_veneer_30",
+      "grain": "length",
+      "banding": "all",
+      "notes": "oak-veneered panel, solid-oak lipping all edges"
+    },
+    {
+      "name": "Leg",
+      "qty": 4,
+      "length": 720,
+      "width": 80,
+      "thickness": 80,
+      "material": "white_oak 80mm / אלון לבן מלא (solid — edge-glue wide parts)",
+      "material_id": "white_oak_80",
+      "grain": "length",
+      "banding": "",
+      "notes": ""
+    },
+    {
+      "name": "ApronFront",
+      "qty": 1,
+      "length": 1240,
+      "width": 140,
+      "thickness": 20,
+      "material": "white_oak 20mm / אלון לבן מלא (solid — edge-glue wide parts)",
+      "material_id": "white_oak_20",
+      "grain": "length",
+      "banding": "",
+      "notes": ""
+    },
+    {
+      "name": "ApronBack",
+      "qty": 1,
+      "length": 1240,
+      "width": 140,
+      "thickness": 20,
+      "material": "white_oak 20mm / אלון לבן מלא (solid — edge-glue wide parts)",
+      "material_id": "white_oak_20",
+      "grain": "length",
+      "banding": "",
+      "notes": ""
+    },
+    {
+      "name": "ApronSide",
+      "qty": 2,
+      "length": 540,
+      "width": 140,
+      "thickness": 20,
+      "material": "white_oak 20mm / אלון לבן מלא (solid — edge-glue wide parts)",
+      "material_id": "white_oak_20",
+      "grain": "length",
+      "banding": "",
+      "notes": ""
+    }
+  ],
+  "material_summary": {
+    "white_oak_veneer_30": {
+      "parts": 1,
+      "area": 1.44,
+      "band": 5000.0,
+      "sheets_est": 1,
+      "band_m": 5.0
+    },
+    "white_oak_80": {
+      "parts": 4,
+      "area": 0.23,
+      "band": 0.0,
+      "sheets_est": 1,
+      "band_m": 0.0
+    },
+    "white_oak_20": {
+      "parts": 4,
+      "area": 0.498,
+      "band": 0.0,
+      "sheets_est": 1,
+      "band_m": 0.0
+    }
+  },
+  "warnings": [],
+  "nesting_note": "Sheet count is a heuristic estimate. Use OpenCutList / CutList Optimizer for a production cut plan."
+}

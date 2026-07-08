@@ -1,0 +1,6 @@
+part,qty,length_mm,width_mm,thickness_mm,material,grain,banding,notes
+Top,1,1600,900,30,white_oak_veneer 30mm / פורניר אלון לבן,length,all,"oak-veneered panel, solid-oak lipping all edges"
+Leg,4,720,80,80,white_oak 80mm / אלון לבן מלא (solid — edge-glue wide parts),length,,
+ApronFront,1,1240,140,20,white_oak 20mm / אלון לבן מלא (solid — edge-glue wide parts),length,,
+ApronBack,1,1240,140,20,white_oak 20mm / אלון לבן מלא (solid — edge-glue wide parts),length,,
+ApronSide,2,540,140,20,white_oak 20mm / אלון לבן מלא (solid — edge-glue wide parts),length,,

@@ -1,0 +1,9 @@
+part,qty,length_mm,width_mm,thickness_mm,material,grain,banding,notes
+Side,2,2400,600,18,melamine 18mm / סיבית מלמין,length,,
+Bottom,1,1164,600,18,melamine 18mm / סיבית מלמין,length,,
+Top,1,1164,600,18,melamine 18mm / סיבית מלמין,length,,
+Back,1,2364,1164,4,hardboard 4mm / מזונית,none,,
+Divider,1,2364,600,18,melamine 18mm / סיבית מלמין,length,,
+FixedPanel,1,580,571,18,melamine 18mm / סיבית מלמין,length,front,
+Shelf,5,580,571,18,melamine 18mm / סיבית מלמין,length,front,
+Door,2,2358,596,18,melamine 18mm / סיבית מלמין,length,all,

@@ -97,6 +97,19 @@
   .cell h3{font-family:var(--disp);font-weight:600;font-size:18px;margin:10px 0 8px;}
   .cell p{margin:0;font-size:14.5px;color:#39362f;}
 
+  /* examples gallery */
+  .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+  @media (max-width:820px){.gallery{grid-template-columns:1fr;max-width:460px;margin:0 auto;}}
+  .ex{border:1px solid var(--line);background:var(--paper);display:flex;flex-direction:column;}
+  .ex .shot{background:#fff;border-bottom:1px solid var(--line);padding:14px;height:200px;display:flex;align-items:center;justify-content:center;}
+  .ex .shot img{max-width:100%;max-height:172px;height:auto;display:block;}
+  .ex .body{padding:18px 18px 20px;display:flex;flex-direction:column;gap:10px;flex:1;}
+  .ex h3{font-family:var(--disp);font-weight:600;font-size:18px;margin:0;}
+  .ex .spec{font-family:var(--mono);font-size:12px;color:var(--graphite);line-height:1.7;}
+  .ex .spec .dim{color:var(--dim);}
+  .ex p{margin:0;font-size:14px;color:#39362f;flex:1;}
+  .ex .links{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:12.5px;padding-top:4px;border-top:1px solid var(--line);}
+
   /* install steps — a real sequence */
   .steps{counter-reset:step;display:grid;gap:0;}
   .step{display:grid;grid-template-columns:auto 1fr;gap:20px;padding:22px 0;border-top:1px solid var(--line);}
@@ -206,9 +219,59 @@
     </div>
   </section>
 
+  <!-- EXAMPLES -->
+  <section class="section" id="examples">
+    <div class="sechead"><span class="no">B/</span><h2>See it on real pieces</h2></div>
+    <p style="max-width:60ch;margin:-14px 0 28px;color:#39362f;">Three pieces run end-to-end through the pipeline. Each folder holds its spec and the whole generated package — drawings, cut list, 3D preview, assembly plan, and packet PDF.</p>
+    <div class="gallery">
+      <div class="ex">
+        <div class="shot"><img src="examples/bookshelf/front.svg" alt="Front and side elevation of the birch bookshelf"></div>
+        <div class="body">
+          <h3>Birch bookshelf</h3>
+          <div class="spec"><span class="dim">800 × 1800 × 300</span> mm · 9 parts<br>Birch plywood · glued &amp; doweled</div>
+          <p>The core box-carcass case — sides, top, bottom, inset back, four adjustable shelves.</p>
+          <div class="links">
+            <a href="examples/bookshelf/packet.pdf">Packet PDF</a>
+            <a href="examples/bookshelf/cutlist.md">Cut list</a>
+            <a href="examples/bookshelf/render.html">3D</a>
+            <a href="examples/bookshelf">Folder ↗</a>
+          </div>
+        </div>
+      </div>
+      <div class="ex">
+        <div class="shot"><img src="examples/table/front.svg" alt="Front and side elevation of the oak dining table"></div>
+        <div class="body">
+          <h3>Oak dining table</h3>
+          <div class="spec"><span class="dim">1600 × 750 × 900</span> mm · 9 parts<br>Solid oak + oak-veneer top</div>
+          <p>Out-of-envelope: a leg-and-apron frame placed part-by-part, with the joints flagged for review.</p>
+          <div class="links">
+            <a href="examples/table/packet.pdf">Packet PDF</a>
+            <a href="examples/table/cutlist.md">Cut list</a>
+            <a href="examples/table/render.html">3D</a>
+            <a href="examples/table">Folder ↗</a>
+          </div>
+        </div>
+      </div>
+      <div class="ex">
+        <div class="shot"><img src="examples/closet/front.svg" alt="Front and side elevation of the melamine wardrobe"></div>
+        <div class="body">
+          <h3>Melamine wardrobe</h3>
+          <div class="spec"><span class="dim">1200 × 2400 × 600</span> mm · 15 parts<br>White melamine · System 32</div>
+          <p>A built-in: centre divider, hanging rod, five shelves, and two overlay doors.</p>
+          <div class="links">
+            <a href="examples/closet/packet.pdf">Packet PDF</a>
+            <a href="examples/closet/cutlist.md">Cut list</a>
+            <a href="examples/closet/render.html">3D</a>
+            <a href="examples/closet">Folder ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- INSTALL -->
   <section class="section" id="install">
-    <div class="sechead"><span class="no">B/</span><h2>Add it to your Claude</h2></div>
+    <div class="sechead"><span class="no">C/</span><h2>Add it to your Claude</h2></div>
     <div class="steps">
       <div class="step">
         <div class="idx"></div>
@@ -253,7 +316,7 @@ claude   <span class="cm"># then ask: "design me a 900mm oak sideboard"</span></
 
   <!-- DISCIPLINE / why -->
   <section class="section" id="how">
-    <div class="sechead"><span class="no">C/</span><h2>The rule that keeps material out of the scrap pile</h2></div>
+    <div class="sechead"><span class="no">D/</span><h2>The rule that keeps material out of the scrap pile</h2></div>
     <p style="max-width:62ch;font-size:16.5px;color:#2c2a26;margin:0 0 18px;">
       Never derive a real dimension from a photo. Images set style and intent; numbers come from a tape measure or a standard. The skill's whole job is to <em>hold, compute, cross-check, and lay out</em> those numbers — one millimetre spec, every view and the cut list derived from it, nothing hand-patched. Assumed numbers stay flagged until you confirm them.
     </p>

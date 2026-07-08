@@ -1,0 +1,84 @@
+{
+  "project": "Birch bookshelf",
+  "units": "mm",
+  "parts": [
+    {
+      "name": "Side",
+      "qty": 2,
+      "length": 1800,
+      "width": 300,
+      "thickness": 18,
+      "material": "plywood_birch 18mm / דיקט בירץ׳",
+      "material_id": "plywood_birch_18",
+      "grain": "length",
+      "banding": "front",
+      "notes": ""
+    },
+    {
+      "name": "Bottom",
+      "qty": 1,
+      "length": 764,
+      "width": 300,
+      "thickness": 18,
+      "material": "plywood_birch 18mm / דיקט בירץ׳",
+      "material_id": "plywood_birch_18",
+      "grain": "length",
+      "banding": "front",
+      "notes": ""
+    },
+    {
+      "name": "Top",
+      "qty": 1,
+      "length": 764,
+      "width": 300,
+      "thickness": 18,
+      "material": "plywood_birch 18mm / דיקט בירץ׳",
+      "material_id": "plywood_birch_18",
+      "grain": "length",
+      "banding": "front",
+      "notes": ""
+    },
+    {
+      "name": "Back",
+      "qty": 1,
+      "length": 1764,
+      "width": 764,
+      "thickness": 4,
+      "material": "hardboard 4mm / מזונית",
+      "material_id": "hardboard_4",
+      "grain": "none",
+      "banding": "",
+      "notes": ""
+    },
+    {
+      "name": "Shelf",
+      "qty": 4,
+      "length": 762,
+      "width": 280,
+      "thickness": 18,
+      "material": "plywood_birch 18mm / דיקט בירץ׳",
+      "material_id": "plywood_birch_18",
+      "grain": "length",
+      "banding": "front",
+      "notes": ""
+    }
+  ],
+  "material_summary": {
+    "plywood_birch_18": {
+      "parts": 8,
+      "area": 2.392,
+      "band": 8176.0,
+      "sheets_est": 1,
+      "band_m": 8.18
+    },
+    "hardboard_4": {
+      "parts": 1,
+      "area": 1.348,
+      "band": 0.0,
+      "sheets_est": 1,
+      "band_m": 0.0
+    }
+  },
+  "warnings": [],
+  "nesting_note": "Sheet count is a heuristic estimate. Use OpenCutList / CutList Optimizer for a production cut plan."
+}
