@@ -211,6 +211,22 @@ Use these docs for detailed workflow and discipline:
 - `references/skill-review-agent.md` — the Stage-6 end-of-project reviewer that feeds improvements back to the skill.
 - `assets/joinery.json` — machine-readable drilling specs for Israeli-standard joinery (cam-and-dowel, confirmat, glued dowel, shelf pins, euro hinges). Verified against Häfele and Blum first-party sources.
 
+## Development — release artifacts
+
+`furniture-design.skill` and `furniture-design-skill-main.zip` are rebuilt
+automatically on every commit by a tracked pre-commit hook
+(`.githooks/pre-commit`), so the downloads never lag the source. The build is
+deterministic, so a commit that doesn't touch the packaged content leaves the
+archives byte-identical (no spurious diffs).
+
+On a fresh clone, enable the hook once:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+To rebuild by hand: `python scripts/build_release.py`.
+
 ## v2 roadmap
 
 Planned additions for the assembly plan (tracked in `assets/joinery.json` and `scripts/assembly.py`):

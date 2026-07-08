@@ -1,0 +1,23 @@
+#!/bin/sh
+# Rebuild the downloadable release artifacts and fold them into this commit, so
+# furniture-design.skill and furniture-design-skill-main.zip never lag the tree.
+# Deterministic build → no diff unless the included content actually changed.
+#
+# Enable on a fresh clone:  git config core.hooksPath .githooks
+#
+# Non-fatal: if Python is unavailable the commit still proceeds (with a warning),
+# so a broken environment never blocks committing your actual work.
+
+py=$(command -v python || command -v python3)
+if [ -z "$py" ]; then
+  echo "pre-commit: python not found — skipping release-artifact rebuild (artifacts may be stale)" >&2
+  exit 0
+fi
+
+if ! "$py" scripts/build_release.py >/dev/null; then
+  echo "pre-commit: build_release.py failed — committing without refreshing artifacts" >&2
+  exit 0
+fi
+
+git add furniture-design.skill furniture-design-skill-main.zip
+exit 0
