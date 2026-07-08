@@ -55,10 +55,11 @@ and ask for measurements; that is the moment to redirect to measuring.
 
 ## Workflow
 
-Five stages. They are a loop, not a waterfall — expect to bounce between 3 and 4.
-At the start of a project, ask which **construction style** applies (frameless /
-System-32 sheet goods, or solid-wood traditional joinery) — it changes
-everything downstream, and there is no safe default.
+Five stages to the build, then a short retrospective (Stage 6). They are a loop,
+not a waterfall — expect to bounce between 3 and 4. At the start of a project, ask
+which **construction style** applies (frameless / System-32 sheet goods, or
+solid-wood traditional joinery) — it changes everything downstream, and there is no
+safe default.
 
 Throughout, maintain the project record at `docs/spec.md` in the working
 directory (see "The project record" below) — it is where the brief, the
@@ -181,6 +182,39 @@ glue gets rebuilt and deleted turn after turn. Instead:
   (`--only views` / `--only cutlist,views`) — mirror the tier staging rule: full
   package (xlsx + PDF + `.skp`) once per *approved revision*, not per nudge.
 
+### 6 — Skill retrospective (do this at the end of every project)
+
+Once the package is delivered and the user is satisfied, run the built-in
+retrospective so the skill improves from real use. This is **not optional
+housekeeping** — it is how field issues reach the author. Follow
+`references/skill-review-agent.md`:
+
+1. **Distill a scrubbed friction log** of this project in *skill* terms: what fought
+   back, what had to be hand-built that should live in `scripts/`, what produced a
+   wrong or stale output, what forced an avoidable round-trip. **Scrub it** — no
+   client names, addresses, or identifying dimensions; describe the piece only as a
+   generic shape ("leg-and-apron table with a lift mechanism").
+2. **Launch the reviewer as a subagent** (Agent tool, `general-purpose`), pasting in
+   `references/skill-review-agent.md` plus the friction log and the skill's absolute
+   file paths. It returns a scrubbed, skill-only P0/P1/P2 findings report.
+3. **Show the report to the user.** If it has no findings, stop — nothing to file.
+4. **Ask consent to file**, then open a GitHub issue on the skill repo so the
+   finding reaches the author:
+   ```bash
+   gh issue create --repo mhorvvitz/furniture-design-skill \
+     --title "skill-review: <project-shape> — <YYYY-MM-DD>" \
+     --body-file <report.md> --label skill-feedback
+   ```
+   Filed under the runner's own `gh` account (attribution + notifies the author).
+   **Fallbacks, never a hard stop**: if `gh` is absent/unauthenticated, write the
+   report to `output/skill-review-<YYYY-MM-DD>.md` and give the user a prefilled
+   `https://github.com/mhorvvitz/furniture-design-skill/issues/new?title=…&body=…&labels=skill-feedback`
+   URL. If the `skill-feedback` label doesn't exist and can't be created (a
+   third-party without write access), file the issue **without** the label rather
+   than fail. If the user declines, keep the local report only.
+
+This runs on **every** completed project, including the author's own dogfooding.
+
 ## The script pipeline (use it first, not as a last resort)
 
 The `scripts/` directory is a tested pipeline, not optional extras. It exists
@@ -289,6 +323,10 @@ caller's bounds on trust) are in `LIMITATIONS.md`.
 - `assets/joinery.json` — machine-readable drilling specs for cam-and-dowel,
   confirmat, glued dowel, shelf pins, euro hinges, and wall fixings. Verified
   against Häfele/Blum first-party sources. Read by `scripts/assembly.py`.
+- `references/skill-review-agent.md` — the Stage 6 retrospective reviewer's charter:
+  how the parent distills a scrubbed friction log and launches the reviewer
+  subagent, and the scrubbed, skill-only P0/P1/P2 report it must return for the
+  `skill-feedback` issue.
 - `LIMITATIONS.md` — verified behaviour, known bugs and fixes, accepted modelling
   gaps, and explicitly deferred items. **Read before stage 4** on any non-trivial
   piece — it documents the `divider()` bounds trap and the box-carcass-only
