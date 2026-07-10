@@ -107,6 +107,11 @@ Three tiers, cheap to expensive — find the design in 1–2 before committing t
   geometry mechanics to the bundled SketchUp skills and minding the mm→inch unit
   boundary — see `references/sketchup-integration.md`. If SketchUp is not
   connected, the tier-2 render stands as the 3D deliverable.
+- **Optional — photoreal listing shot**: when the user wants a store-grade
+  product photo (an online-shop listing, a catalogue), render a path-traced
+  still from the same spec with `scripts/blender_render.py` (Blender Cycles via
+  `pip install bpy`). This is a *deliverable*, not an iteration tool — shoot it
+  after sign-off. See `references/visualization.md`.
 
 Drive every view from the spec's dimensions so nothing disagrees with the numbers.
 Loop within a tier (show → react → adjust spec → re-render), and do not jump to
@@ -231,6 +236,11 @@ non-trivial piece).
   bridges to the cut-list schema.
 - `scripts/draw.py` — tier-1 dimensioned SVG elevations from the spec.
 - `scripts/render.py` — tier-2 three.js product render from the spec.
+- `scripts/blender_render.py` — optional photoreal still (online-store listing
+  shot) from the same spec, path-traced with Blender Cycles. Needs `pip install
+  bpy` (~1 GB, Python 3.11 — deliberately not vendored); supports alpha cutouts
+  (`--transparent`) and 360° turntable sets (`--frames N`). See
+  `references/visualization.md`.
 - `scripts/cutlist.py` — validated cut list / BOM from `cutlist_parts()` output.
 - `scripts/assembly.py` — connection derivation, per-part drilling coordinates,
   build order, and step-by-step assembly plan. All drilling numbers from
