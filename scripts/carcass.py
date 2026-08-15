@@ -503,6 +503,44 @@ def check_facade_coverage(spec, face="front", max_gap=5, plane_tol=30):
     return warnings
 
 
+def validate_spec(spec):
+    """Cheap sanity checks on a positioned-part spec. Returns a list of
+    human-readable warnings; never raises.
+
+    Exists because an inverted depth axis is invisible to every other check in
+    this toolchain: cut-list sizes, overlap detection, joint derivation and the
+    front elevation are all direction-agnostic. It shows up only in the 3D view
+    and the plan, where it reads as a mirrored model rather than an error.
+
+    The convention is FRONT = Z = D (see the module docstring and
+    Carcass.door(), which places leaves at z = D).
+    """
+    warnings = []
+    O = spec.get("overall") or {}
+    D = O.get("D")
+    parts = spec.get("parts", [])
+
+    fronts = [p for p in parts if p.get("kind") == "door"]
+    if fronts and D:
+        # Front-facing parts should cluster at the high-Z end.
+        centres = [p["z"] + p["sz"] / 2.0 for p in fronts]
+        mean = sum(centres) / len(centres)
+        if mean < D / 2.0:
+            warnings.append(
+                f"depth axis looks inverted: {len(fronts)} front-facing part(s) "
+                f"average z={mean:.0f} in a {D:.0f}mm depth, i.e. they sit at the "
+                f"BACK. The convention is front = Z = D. Left uncorrected this "
+                f"mirrors the 3D render and the plan while every other output "
+                f"still validates.")
+
+    for p in parts:
+        for axis in ("sx", "sy", "sz"):
+            if p.get(axis, 0) <= 0:
+                warnings.append(
+                    f"{p.get('defn', '?')}: non-positive {axis}={p.get(axis)}")
+    return warnings
+
+
 if __name__ == "__main__":
     # quick self-test: the 80cm bookshelf
     c = Carcass(800, 1800, 300, t=18, name="Bookshelf")
