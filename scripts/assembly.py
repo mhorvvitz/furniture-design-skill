@@ -780,6 +780,36 @@ def _emit_step_instructions(lines, step, spec, connections, jnr, style):
         lines.append(f"1. Position and fix per the drilling schedule above.")
 
 
+_STYLE_DEFAULT = {"frameless_kd": "cam_and_dowel",
+                  "frameless_permanent": "glued_dowel",
+                  "traditional": "glued_dowel"}
+
+
+def suggest_joint_overrides(spec, style="frameless_kd"):
+    """Every touching part-pair in `spec`, pre-filled with the style default.
+
+    Paste the result into a project spec module's `joint_overrides` and edit
+    only the exceptions. Regenerate after any geometry change — new adjacencies
+    appear whenever parts move.
+    """
+    default = _STYLE_DEFAULT.get(style, "cam_and_dowel")
+    out = {}
+    for c in derive_connections(spec, style):
+        a = c["part_a"].rsplit("_", 1)[0]
+        b = c["part_b"].rsplit("_", 1)[0]
+        out[tuple(sorted((a, b)))] = default
+    return out
+
+
+def format_joint_overrides(suggested):
+    """`suggested` as pasteable Python source."""
+    lines = ["joint_overrides = {"]
+    for (a, b), v in sorted(suggested.items()):
+        lines.append(f'    ("{a}", "{b}"): "{v}",')
+    lines.append("}")
+    return "\n".join(lines)
+
+
 def write_assembly_plan(spec, path, style="frameless_kd", joint_overrides=None):
     """Write the assembly plan to a Markdown file."""
     doc = generate_assembly_document(spec, style, joint_overrides)
@@ -791,6 +821,28 @@ def write_assembly_plan(spec, path, style="frameless_kd", joint_overrides=None):
 if __name__ == "__main__":
     import sys
     sys.path.insert(0, os.path.dirname(__file__))
+
+    import sys as _sys
+    if "--list-pairs" in _sys.argv:
+        import importlib.util as _ilu
+        _path = [a for a in _sys.argv[1:] if a.endswith(".py")][0]
+        _n = _path.rsplit("/", 1)[-1].rsplit("\\", 1)[-1][:-3]
+        _s = _ilu.spec_from_file_location(_n, _path)
+        _m = _ilu.module_from_spec(_s)
+        _sys.modules[_n] = _m
+        _s.loader.exec_module(_m)
+        # Same contract as package.load_spec_module: `spec` (dict or callable)
+        # or `build()`. Both example spec modules use build().
+        if hasattr(_m, "spec"):
+            _spec = _m.spec() if callable(_m.spec) else _m.spec
+        elif hasattr(_m, "build"):
+            _spec = _m.build()
+        else:
+            raise SystemExit(
+                f"{_path}: module must expose `spec` (dict or callable) or `build()`")
+        print(format_joint_overrides(suggest_joint_overrides(_spec)))
+        raise SystemExit(0)
+
     from carcass import Carcass, check_overlaps
 
     # Quick self-test: bookshelf
