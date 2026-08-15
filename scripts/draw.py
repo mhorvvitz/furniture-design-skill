@@ -144,8 +144,8 @@ def plan(spec, path, title=None, max_w=1600, max_h=1000):
     s=_fit_scale(W,D,0,max_w,max_h)              # fit W across, D down
     px0=_LEFT; pz0=70                             # plan top-left; front at bottom
     def PX(x): return px0+x*s
-    def PZ(z): return pz0+(D-z)*s                 # z=0 (back) at top, z=D (front) at bottom
-    Wp,Hp = PX(W)+230, PZ(0)+90
+    def PZ(z): return pz0+z*s                     # z=0 (back) at top, z=D (front) at bottom
+    Wp,Hp = PX(W)+230, PZ(D)+90
     o=[_svg(Wp,Hp, title or f'{spec["name"]} — plan (top view) · mm')]
     o.append(_txt(PX(W/2),58,"plan — front at bottom",11,MUT,"middle"))
     # draw parts as XZ rects; skip nothing (top panels naturally cover — draw
@@ -155,13 +155,13 @@ def plan(spec, path, title=None, max_w=1600, max_h=1000):
         if p.get("kind")=="rod":
             o.append(f'<line x1="{PX(p["x"]):.1f}" y1="{PZ(p["z"]+p["sz"]/2):.1f}" x2="{PX(p["x"]+p["sx"]):.1f}" y2="{PZ(p["z"]+p["sz"]/2):.1f}" stroke="{ROD}" stroke-width="3" stroke-linecap="round"/>')
             continue
-        o.append(_rect(PX(p["x"]),PZ(p["z"]+p["sz"]),p["sx"]*s,p["sz"]*s,_fill_for(p)))
+        o.append(_rect(PX(p["x"]),PZ(p["z"]),p["sx"]*s,p["sz"]*s,_fill_for(p)))
     # overall W chain (below), D chain (left)
-    yb=PZ(0)
+    yb=PZ(D)
     o.append(_ext(px0,yb,px0,yb+55)); o.append(_ext(PX(W),yb,PX(W),yb+55))
     o.append(_hdim(yb+45,px0,PX(W),str(round(W))))
     o.append(_ext(px0,PZ(D),px0-40,PZ(D))); o.append(_ext(px0,PZ(0),px0-40,PZ(0)))
-    o.append(_vdim(px0-30,PZ(D),PZ(0),str(round(D))))
+    o.append(_vdim(px0-30,PZ(0),PZ(D),str(round(D))))
     o.append("</svg>")
     open(path,"w",encoding="utf-8").write("".join(o))
     return path
