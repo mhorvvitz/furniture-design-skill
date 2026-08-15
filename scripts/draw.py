@@ -166,6 +166,50 @@ def plan(spec, path, title=None, max_w=1600, max_h=1000):
     open(path,"w",encoding="utf-8").write("".join(o))
     return path
 
+_ELEV_WALLS = ("front", "back", "left", "right")
+
+
+def elevation(spec, path, wall, title=None, include=None, max_w=1600, max_h=1000):
+    """One dimensioned elevation per wall run, for L- and U-shaped built-ins.
+
+    Re-projects the SAME positioned-part spec onto the chosen wall plane and
+    reuses draw() so the dimension chains and part rendering stay identical.
+    Nothing is re-measured — every rectangle is a spec part box, rotated.
+
+    Projections are 'viewed from inside the room': on a left-wall elevation the
+    front of the run is at the drawing's left edge; on a right-wall elevation
+    it is at the right edge.
+    """
+    if wall not in _ELEV_WALLS:
+        raise ValueError(f"wall must be one of {_ELEV_WALLS}, got {wall!r}")
+
+    O = spec["overall"]
+    W, H, D = O["W"], O["H"], O["D"]
+    parts = [p for p in spec["parts"] if (include is None or include(p))]
+
+    out = []
+    for p in parts:
+        q = dict(p)
+        if wall == "front":
+            pass
+        elif wall == "back":
+            q["x"] = W - (p["x"] + p["sx"])
+            q["z"] = D - (p["z"] + p["sz"])
+        elif wall == "left":
+            q["x"], q["sx"] = D - (p["z"] + p["sz"]), p["sz"]
+            q["z"], q["sz"] = p["x"], p["sx"]
+        else:  # right
+            q["x"], q["sx"] = p["z"], p["sz"]
+            q["z"], q["sz"] = W - (p["x"] + p["sx"]), p["sx"]
+        out.append(q)
+
+    ow, od = (W, D) if wall in ("front", "back") else (D, W)
+    sub = dict(name=title or f'{spec["name"]} — {wall} elevation',
+               overall=dict(W=ow, H=H, D=od),
+               origin=spec.get("origin", [0, 0, 0]), parts=out)
+    return draw(sub, path, title=sub["name"], max_w=max_w, max_h=max_h)
+
+
 if __name__=="__main__":
     from carcass import Carcass
     c=Carcass(800,1800,300,t=18,name="Bookshelf")

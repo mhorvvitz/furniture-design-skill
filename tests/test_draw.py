@@ -1,4 +1,7 @@
 import re
+
+import pytest
+
 import draw
 
 
@@ -58,3 +61,43 @@ def test_plan_front_edge_is_below_back_edge(demo_spec, tmp_path):
     # (smallest y of the door rect) must be below the sides' top edge.
     ys = sorted(r[1] for r in rects)
     assert ys[-1] > ys[0] + 1
+
+
+def test_elevation_rejects_unknown_wall(demo_spec, tmp_path):
+    with pytest.raises(ValueError):
+        draw.elevation(demo_spec, str(tmp_path / "x.svg"), "ceiling")
+
+
+def test_elevation_left_puts_the_front_at_the_left_edge(demo_spec, tmp_path):
+    """A door sits at z = D..D+18. Under the left-wall projection
+    u = D - (z + sz), that maps to a small (near-zero, possibly negative) u,
+    i.e. the left edge of the drawing."""
+    D = demo_spec["overall"]["D"]
+    door = next(p for p in demo_spec["parts"] if p.get("kind") == "door")
+    u = D - (door["z"] + door["sz"])
+    assert u <= 0 + 1e-9
+
+
+def test_elevation_right_puts_the_front_at_the_right_edge(demo_spec):
+    D = demo_spec["overall"]["D"]
+    door = next(p for p in demo_spec["parts"] if p.get("kind") == "door")
+    u = door["z"]
+    assert u >= D - 1e-9
+
+
+@pytest.mark.parametrize("wall", ["front", "back", "left", "right"])
+def test_elevation_writes_a_file_for_every_wall(demo_spec, tmp_path, wall):
+    out = tmp_path / f"{wall}.svg"
+    draw.elevation(demo_spec, str(out), wall)
+    assert out.exists()
+    assert out.read_text(encoding="utf-8").startswith("<svg")
+
+
+def test_elevation_include_filter_reduces_part_count(demo_spec, tmp_path):
+    all_svg = tmp_path / "all.svg"
+    few_svg = tmp_path / "few.svg"
+    draw.elevation(demo_spec, str(all_svg), "front")
+    draw.elevation(demo_spec, str(few_svg), "front",
+                   include=lambda p: p.get("kind") == "door")
+    assert len(_rects(few_svg.read_text(encoding="utf-8"))) < \
+           len(_rects(all_svg.read_text(encoding="utf-8")))
