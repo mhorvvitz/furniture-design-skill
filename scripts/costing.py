@@ -74,5 +74,11 @@ if __name__ == "__main__":
     here = os.path.dirname(os.path.abspath(__file__))
     default_rates = os.path.join(here, "..", "assets", "rates.json")
     a = sys.argv[1:]
-    main(a[0], a[1] if len(a) > 1 else default_rates,
-         a[2] if len(a) > 2 else "cost.md")
+    if not a:
+        raise SystemExit("usage: costing.py <cutlist.json> [rates.json] [out.md]\n"
+                         f"       rates default: {os.path.normpath(default_rates)}")
+    est = main(a[0], a[1] if len(a) > 1 else default_rates,
+               a[2] if len(a) > 2 else "cost.md")
+    if est["missing_rates"]:
+        print(f"NO RATE for: {', '.join(est['missing_rates'])} — excluded from the "
+              f"totals; add them to assets/rates.json", file=sys.stderr)
