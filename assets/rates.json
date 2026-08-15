@@ -1,0 +1,40 @@
+{
+  "_note": "AUTHORED price source for costing.py. Every number here is an ASSUMED market rate for the Israeli market and MUST be replaced with real supplier quotes before this is used to commit money. Ranges are low/high for the same item, not good/bad quality. Materials and hardware only — carpenter labour, delivery and installation are NOT included.",
+  "_verify": "Ask the supplier for: board price per sheet in your decor, banding applied per metre, and the hardware lines below.",
+  "_source": "NONE — no supplier quote, no price list, no published index backs these figures. They are order-of-magnitude assumptions carried over from one 2026-08 walk-in-closet project so costing.py has a runnable default. Treat every value as unverified until replaced.",
+  "_hardware_scope": "The `hardware` block below is a PER-PROJECT authored list, not a skill-wide default — its quantities are that closet's (52 cams, 6 runner pairs, 3 rods, an LED run). Replace the whole block for your piece. Unlike boards and banding, hardware is NOT derived from the cut list; assembly.md is the authoritative connector count. See LIMITATIONS.md.",
+  "currency": "ILS",
+  "vat_pct": 18,
+  "vat_note": "Israeli VAT as assumed at time of writing — confirm the current rate.",
+
+  "sheets": {
+    "melamine_18": {"desc": "18mm melamine-faced board, oak decor", "sheet_mm": [2800, 2070], "low": 190, "high": 280},
+    "melamine_25": {"desc": "25mm melamine-faced board, oak decor", "sheet_mm": [2800, 2070], "low": 300, "high": 420},
+    "melamine_10": {"desc": "10mm melamine-faced board, oak decor (shaker trim)", "sheet_mm": [2800, 2070], "low": 120, "high": 180},
+    "plywood_birch_15": {"desc": "15mm birch plywood (drawer boxes)", "sheet_mm": [2440, 1220], "low": 260, "high": 380},
+    "hardboard_4": {"desc": "4mm hardboard (drawer bottoms)", "sheet_mm": [2440, 1220], "low": 35, "high": 60}
+  },
+
+  "banding_per_m": {"desc": "ABS edge banding, decor-matched, applied", "low": 4.0, "high": 8.0},
+
+  "hardware": [
+    {"item": "Minifix cam + bolt + cover cap (set)", "qty": 52, "low": 2.5, "high": 4.5},
+    {"item": "Confirmat screw 7x50 + cap", "qty": 13, "low": 0.5, "high": 1.0},
+    {"item": "Fluted dowel 8x30", "qty": 30, "low": 0.2, "high": 0.4},
+    {"item": "Wood glue PVA D3, 750ml", "qty": 1, "low": 35, "high": 60},
+    {"item": "Drawer runner pair, 300mm soft-close", "qty": 6, "low": 45, "high": 95},
+    {"item": "Bar pull, 160mm centres, BRASS/GOLD finish", "qty": 6, "low": 35, "high": 110},
+    {"item": "Hanging rod (807 / 825 / 825)", "qty": 3, "low": 35, "high": 70},
+    {"item": "Rod end socket", "qty": 6, "low": 8, "high": 20},
+    {"item": "Rod centre support bracket", "qty": 3, "low": 15, "high": 35},
+    {"item": "Shelf pin 5mm", "qty": 8, "low": 1.0, "high": 2.0},
+    {"item": "Heavy-duty shelf L-bracket, 350mm arm", "qty": 4, "low": 35, "high": 80},
+    {"item": "Wall fixing (plug + screw)", "qty": 45, "low": 1.0, "high": 2.5},
+    {"item": "LED aluminium channel + diffuser (per m)", "qty": 2.1, "low": 25, "high": 50},
+    {"item": "LED strip, warm white CRI>=90 (per m)", "qty": 2.1, "low": 40, "high": 90},
+    {"item": "LED driver 24V", "qty": 1, "low": 90, "high": 180},
+    {"item": "PIR / door switch", "qty": 1, "low": 60, "high": 150}
+  ],
+
+  "waste_pct": {"desc": "extra sheets/banding to allow for offcuts and mistakes", "value": 10}
+}
