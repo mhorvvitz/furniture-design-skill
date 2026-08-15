@@ -83,6 +83,8 @@ def build_legend(spec):
 def overlap_gate(spec, expected, force):
     flags = carcass.check_overlaps(spec)
     facade = carcass.check_facade_coverage(spec)
+    for w in carcass.validate_spec(spec):
+        print(f"  spec:    {w}", file=sys.stderr)
     for w in flags:
         print(f"  overlap: {w}", file=sys.stderr)
     for w in facade:
@@ -148,6 +150,11 @@ def regenerate(mod, spec, outdir, steps):
     if "views" in steps or "packet" in steps:
         draw.plan(spec, plan_svg)
         draw.draw(spec, front_svg, states=has_motion(spec))
+        for _wall in getattr(mod, "elevation_walls", []) or []:
+            _name = f"elev_{_wall}.svg"
+            draw.elevation(spec, outp(_name), _wall)
+            if "views" in steps:
+                written.append(_name)
         if "views" in steps:
             written += ["plan.svg", "front.svg"]
 
@@ -181,6 +188,9 @@ def regenerate(mod, spec, outdir, steps):
             print("  (packet PDF skipped — no browser; packet.html is the deliverable)",
                   file=sys.stderr)
             written += ["packet.html"]
+
+    for fn in getattr(mod, "extra_outputs", []) or []:
+        written += list(fn(spec, outdir) or [])
 
     return written
 
