@@ -3,6 +3,15 @@
 Stated plainly so nobody mistakes "packaged" for "finished." Verified vs
 unverified is marked explicitly — see the confidence note on each.
 
+### Fixed 2026-08
+
+- `draw.plan()` drew the front at the top of the page while captioning it
+  "front at bottom" (formula contradicted its own comment). Fixed; regression
+  test in `tests/test_draw.py`.
+- An inverted depth axis passed every check — cut list, overlaps, joints and
+  front elevations are all direction-agnostic — and surfaced only as a mirrored
+  3D render. `carcass.validate_spec()` now flags it.
+
 ## Verified with evidence
 
 - **`cutlist.py`** — validated against real specs (bookshelf, closet ×2, plus a

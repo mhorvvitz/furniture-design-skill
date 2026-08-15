@@ -229,7 +229,9 @@ non-trivial piece).
   **positioned-part spec** — the single source of truth every emitter reads.
   `check_overlaps(spec)` is the collision validator; `cutlist_parts(spec)`
   bridges to the cut-list schema.
-- `scripts/draw.py` — tier-1 dimensioned SVG elevations from the spec.
+- `scripts/draw.py` — tier-1 dimensioned SVG elevations from the spec. Also
+  `draw.elevation(spec, path, wall)` for one dimensioned elevation per wall run —
+  needed by every L- and U-shaped built-in.
 - `scripts/render.py` — tier-2 three.js product render from the spec.
 - `scripts/cutlist.py` — validated cut list / BOM from `cutlist_parts()` output.
 - `scripts/assembly.py` — connection derivation, per-part drilling coordinates,
@@ -249,7 +251,15 @@ non-trivial piece).
   `<piece>_spec.py` and it rebuilds the whole package (cut list in md/csv/xlsx/json,
   2D views, 3D render, assembly plan, packet PDF) after a hard `check_overlaps`
   gate. `--only cutlist,views` for cheap incremental regeneration. Use it instead
-  of re-running the five emitters by hand.
+  of re-running the five emitters by hand. A spec module may add `elevation_walls`
+  (per-wall elevations) and `extra_outputs` (any `f(spec, outdir) -> [filenames]`
+  emitter) so "one command regenerates everything" stays true as a project grows.
+- `scripts/import_mesh.py` — reverse-engineering entry point: binary STL →
+  connected solids → bounding boxes → candidate positioned-part spec. Use when
+  starting from an existing model rather than a blank sheet.
+- `scripts/costing.py` — materials + hardware estimate, derived from the cut
+  list and `assets/rates.json`. Every rate is an assumed market price; labour
+  excluded.
 
 **Envelope**: the pipeline covers axis-aligned box-carcass work — panels, boxes,
 rods — which is most cabinetry, shelving, wardrobes, and simple leg-and-panel
@@ -300,6 +310,14 @@ caller's bounds on trust) are in `LIMITATIONS.md`.
     derive from it, one way. Change an input there first, then rebuild. Where a
     script and the record disagree, the record wins. Keep assumed numbers flagged
     until confirmed.
+15. **Reading a dimensioned plan is not measuring an image.** Hard rule 1 forbids
+    scaling pixels. Reading the printed number "165" off an architect's plan is
+    reading data they authored — that is allowed, and is often the best source
+    you have. The discipline: record the source as `plan`, and **cross-check
+    every plan-read number against a second source**. Where a number has only
+    one source, say so and ask.
+16. **Never populate reference data from memory** — drilling specs, colour
+    codes, prices. Generalises rule 13. Every data file carries `_source`.
 
 ## Reference files
 
