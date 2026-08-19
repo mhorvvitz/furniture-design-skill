@@ -80,11 +80,32 @@ def build_legend(spec):
     return legend
 
 
+def check_mod_keys(mod, spec):
+    """Warn when a `banding` or `notes` key matches no part in the spec.
+
+    Both are free-text dicts keyed by defn name, and nothing validated them. On
+    a real project a part was renamed and its notes silently stopped applying,
+    while stale entries for deleted parts kept describing a design that no
+    longer existed — and those notes print on the cut list the shop works from.
+    """
+    defns = {p["defn"] for p in spec.get("parts", [])}
+    warnings = []
+    for attr in ("banding", "notes"):
+        for key in (getattr(mod, attr, None) or {}):
+            if key not in defns:
+                warnings.append(
+                    f"{attr}[{key!r}] matches no part in the spec — renamed or "
+                    f"deleted? It is being silently ignored.")
+    return warnings
+
+
 def overlap_gate(spec, expected, force):
     flags = carcass.check_overlaps(spec)
     facade = carcass.check_facade_coverage(spec)
     for w in carcass.validate_spec(spec):
         print(f"  spec:    {w}", file=sys.stderr)
+    for w in carcass.check_material_thickness(spec):
+        print(f"  material:{w}", file=sys.stderr)
     for w in flags:
         print(f"  overlap: {w}", file=sys.stderr)
     for w in facade:
@@ -104,7 +125,7 @@ def has_motion(spec):
     return any(p.get("motion") for p in spec["parts"])
 
 
-def regenerate(mod, spec, outdir, steps):
+def regenerate(mod, spec, outdir, steps, skip=()):
     os.makedirs(outdir, exist_ok=True)
     project = getattr(mod, "project", spec.get("name", "(untitled)"))
     rev = getattr(mod, "rev", None)
@@ -113,6 +134,11 @@ def regenerate(mod, spec, outdir, steps):
     notes = getattr(mod, "notes", None)
     joint_overrides = getattr(mod, "joint_overrides", None)
     legend = getattr(mod, "legend", None) or build_legend(spec)
+    replaces = getattr(mod, "replaces", None) or {}
+    steps = tuple(st for st in steps if st not in (skip or ()))
+
+    for w in check_mod_keys(mod, spec):
+        print(f"  spec:    {w}", file=sys.stderr)
     O = spec.get("overall", {})
     overall = f"{O.get('W')}x{O.get('H')}x{O.get('D')}" if O else None
 
@@ -159,9 +185,15 @@ def regenerate(mod, spec, outdir, steps):
             written += ["plan.svg", "front.svg"]
 
     # --- 3D render ---
+    # A project may substitute its own renderer via `replaces`. Before this,
+    # the only way to ship a richer render was to overwrite render.html AFTER
+    # package.py ran — so any plain `package.py` run silently clobbered it.
     if "render" in steps:
-        render.render(spec, outp("render.html"))
-        written += ["render.html"]
+        if "render" in replaces:
+            written += list(replaces["render"](spec, outdir) or [])
+        else:
+            render.render(spec, outp("render.html"))
+            written += ["render.html"]
 
     # --- assembly plan ---
     asm_md = outp("assembly.md")
@@ -170,13 +202,38 @@ def regenerate(mod, spec, outdir, steps):
         if "assembly" in steps:
             written += ["assembly.md"]
 
-    # --- packet PDF (depends on views + cutlist + assembly, regenerated above) ---
+    # --- extra emitters, BEFORE the packet so they can contribute to it ---
+    for fn in getattr(mod, "extra_outputs", []) or []:
+        written += list(fn(spec, outdir) or [])
+
+    # --- packet PDF ---
+    # Built LAST, and from whatever is actually on disk. Previously it ran
+    # before extra_outputs with a hardcoded [cutlist, assembly] document list,
+    # so a sheet a project generated could never reach the PDF the carpenter
+    # actually holds — and wall elevations were omitted even when present.
     if "packet" in steps:
         import datetime
+        import glob
+
+        views = getattr(mod, "packet_views", None)
+        if views is None:
+            views = [outp("plan.svg"), outp("front.svg")]
+            views += sorted(glob.glob(outp("elev_*.svg")))
+        else:
+            views = [outp(v) for v in views]
+
+        docs = getattr(mod, "packet_docs", None)
+        if docs is None:
+            docs = [outp("cutlist.md"), outp("assembly.md")]
+        else:
+            docs = [outp(d) for d in docs]
+
+        views = [v for v in views if os.path.exists(v)]
+        docs = [d for d in docs if os.path.exists(d)]
+
         html = packet.build_html(
             project, project, overall, spec.get("units", "mm"), rev,
-            datetime.date.today().isoformat(),
-            [plan_svg, front_svg], [cl_md, asm_md], legend)
+            datetime.date.today().isoformat(), views, docs, legend)
         pdf_path = outp("packet.pdf")
         html_path = outp("packet.html")
         with open(html_path, "w", encoding="utf-8") as f:
@@ -189,9 +246,6 @@ def regenerate(mod, spec, outdir, steps):
                   file=sys.stderr)
             written += ["packet.html"]
 
-    for fn in getattr(mod, "extra_outputs", []) or []:
-        written += list(fn(spec, outdir) or [])
-
     return written
 
 
@@ -201,6 +255,8 @@ def main():
     ap.add_argument("--out", default="output", help="output directory")
     ap.add_argument("--only", default=None,
                     help=f"comma-separated subset of {','.join(ALL_STEPS)} (default: all)")
+    ap.add_argument("--skip", default=None,
+                    help="comma-separated steps to skip (e.g. --skip render)")
     ap.add_argument("--force", action="store_true", help="ignore the overlap gate")
     args = ap.parse_args()
 
@@ -216,7 +272,8 @@ def main():
     expected = getattr(mod, "expected_overlaps", 0)
     overlap_gate(spec, expected, args.force)
 
-    written = regenerate(mod, spec, args.out, steps)
+    skip = tuple(x.strip() for x in (args.skip or "").split(",") if x.strip())
+    written = regenerate(mod, spec, args.out, steps, skip=skip)
     print(f"regenerated {len(written)} file(s) in {args.out}/:")
     for w in written:
         print(f"  - {w}")

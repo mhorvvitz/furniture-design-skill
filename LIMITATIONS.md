@@ -3,6 +3,21 @@
 Stated plainly so nobody mistakes "packaged" for "finished." Verified vs
 unverified is marked explicitly — see the confidence note on each.
 
+### Fixed 2026-08 (round 2 — issue #2)
+
+- `package.py`'s `render` step overwrote a project's own render. `extra_outputs`
+  runs after it, so the only workaround was to rewrite `render.html` afterwards —
+  which any plain `package.py` run then clobbered, silently. Added `replaces`.
+- The packet was built **before** `extra_outputs`, from a hardcoded
+  `[cutlist, assembly]` document list, so nothing a project generated could reach
+  the PDF the carpenter holds; wall elevations were dropped too. It now builds
+  last, from what is on disk, honouring `packet_docs` / `packet_views`.
+- `banding` / `notes` keys that match no part are now reported. They were silently
+  ignored, so a renamed part lost its notes and stale entries kept describing a
+  design that no longer existed — on the cut list the shop works from.
+- Part thickness is now checked against the material's `thick` list in
+  materials.json (warning, not an error — suppliers stock different ranges).
+
 ### Fixed 2026-08
 
 - `draw.plan()` drew the front at the top of the page while captioning it

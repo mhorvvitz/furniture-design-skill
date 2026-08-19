@@ -550,3 +550,43 @@ if __name__ == "__main__":
     print("positioned parts:", len(s["parts"]))
     for p in cutlist_parts(s):
         print(f"  {p['qty']}x {p['name']:10} {p['length']}x{p['width']}  {p['material']}")
+
+
+def check_material_thickness(spec, exclude_kinds=_CUTLIST_EXCLUDE):
+    """Warn when a part's thickness is not a thickness that material is made in.
+
+    assets/materials.json carries a `thick` list per sheet good. Nothing checked
+    it, so a spec could ask for 18mm MDF — a thickness MDF is not manufactured
+    in — and the cut list would price and print it without complaint.
+
+    The catalogue is a sensible default, not gospel: suppliers stock different
+    ranges (17mm coloured melamine is common in Israel and is not in the list).
+    So this WARNS and names the available thicknesses; it never fails.
+    """
+    mats = materials()
+    warnings = []
+    seen = set()
+    for p in spec.get("parts", []):
+        if p.get("kind") in exclude_kinds:
+            continue
+        mat = p.get("material")
+        thick = min(p["sx"], p["sy"], p["sz"])
+        key = (mat, thick)
+        if key in seen:
+            continue
+        seen.add(key)
+        avail = None
+        for section in _MATERIAL_SECTIONS:
+            entry = mats.get(section, {}).get(mat)
+            if isinstance(entry, dict) and entry.get("thick"):
+                avail = entry["thick"]
+                break
+        if not avail:
+            continue
+        t = int(thick) if float(thick).is_integer() else thick
+        if t not in avail:
+            warnings.append(
+                f"{mat}: {t}mm is not in the catalogue for this material "
+                f"(stocked: {', '.join(str(a) for a in avail)}). Confirm with "
+                f"your supplier, or add it to assets/materials.json.")
+    return warnings
