@@ -242,6 +242,17 @@ non-trivial piece).
 - `scripts/sketchup_emit.py` — tier-3 `build_model` code from the spec, encoding
   the live-verified patterns (mm→inch conversion, axis remap, component
   definitions, lofted rods, style preset, hero camera).
+**Spec-module hooks `package.py` honours** (all optional):
+
+| attribute | effect |
+|---|---|
+| `elevation_walls` | emit one dimensioned elevation per wall run |
+| `extra_outputs` | extra emitters, `f(spec, outdir) -> [filenames]`. Run **before** the packet, so what they write can go into it |
+| `replaces` | `{step: f(spec, outdir)}` — run your own emitter **instead of** a built-in step. Use this for a custom render; writing `render.html` after the fact does not work, because a later `package.py` run overwrites it |
+| `packet_docs` / `packet_views` | which markdown/SVG files go in the packet. Default: cut list + assembly, plan + front + **every `elev_*.svg` found** |
+
+CLI: `--only cutlist,views` to run a subset, `--skip render` to drop one.
+
 - `scripts/packet.py` — assembles the SVG views + cut-list/assembly markdown into
   one print-clean A4 PDF (the builder packet), shelling out to headless
   Chrome/Edge. Self-contained: built-in markdown→HTML, no `pdf`/`xlsx` skill
