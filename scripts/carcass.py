@@ -100,7 +100,8 @@ class Carcass:
         print(f"WARNING (carcass): {msg}", file=sys.stderr)
 
     # ---- low-level ----
-    def add(self, defn, x, y, z, sx, sy, sz, material=None, grain="length", note="", kind=None, joint=None):
+    def add(self, defn, x, y, z, sx, sy, sz, material=None, grain="length", note="", kind=None, joint=None,
+            motion=None):
         d = dict(defn=defn, name=defn,
                 x=x + self.ox, y=y + self.oy, z=z + self.oz,
                 sx=sx, sy=sy, sz=sz,
@@ -109,14 +110,21 @@ class Carcass:
             d["kind"] = kind
         if joint is not None:
             d["joint"] = joint
+        if motion is not None:
+            d["motion"] = motion
         self.parts.append(d)
 
-    def fixture(self, defn, x, y, z, sx, sy, sz, material="steel", note="", grain="none"):
+    def fixture(self, defn, x, y, z, sx, sy, sz, material="steel", note="", grain="none",
+                motion=None):
         """A non-cut, render-only object (TV, VESA bracket, mattress, appliance).
         Lives in the spec to drive clearances and views; excluded from the cut
-        list and joint derivation via kind='fixture'."""
+        list and joint derivation via kind='fixture'.
+
+        Pass `motion` when the fixture rides a moving part: a TV on a flip-up lid
+        shares the lid's motion group, so it swings with the lid in both the
+        open-state elevation and the 3D view."""
         self.add(defn, x, y, z, sx, sy, sz, material=material, grain=grain,
-                 note=note, kind="fixture")
+                 note=note, kind="fixture", motion=motion)
 
     # ---- carcass shell ----
     def sides(self, depth=None):

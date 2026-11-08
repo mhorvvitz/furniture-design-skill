@@ -840,7 +840,10 @@ if __name__ == "__main__":
         else:
             raise SystemExit(
                 f"{_path}: module must expose `spec` (dict or callable) or `build()`")
-        print(format_joint_overrides(suggest_joint_overrides(_spec)))
+        # Honour the module's own construction style, so the pre-filled default
+        # matches what the piece will actually be built with.
+        _style = getattr(_m, "style", "frameless_kd")
+        print(format_joint_overrides(suggest_joint_overrides(_spec, _style)))
         raise SystemExit(0)
 
     from carcass import Carcass, check_overlaps

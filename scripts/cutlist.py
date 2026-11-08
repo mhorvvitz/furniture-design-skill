@@ -114,7 +114,11 @@ def validate(spec):
                     f"the largest overall dimension {max_overall} — likely a wrong number")
         _, unknown = banding_length(p)
         if unknown:
-            warnings.append(f"{tag}: unrecognised banding tags {unknown} (not counted)")
+            warnings.append(
+                f"{tag}: unrecognised banding tags {unknown} (not counted) — "
+                f"valid tags are {', '.join(sorted(BANDING_EDGES))}. They are "
+                f"edge-relative, not world-relative: a part's top edge is "
+                f"whichever of l1/l2/w1/w2 runs along it.")
     return errors, warnings, mats
 
 

@@ -1,0 +1,203 @@
+{
+  "project": "Hidden-TV coffee table",
+  "units": "mm",
+  "parts": [
+    {
+      "name": "Leg",
+      "qty": 4,
+      "length": 390,
+      "width": 60,
+      "thickness": 60,
+      "material": "white_oak 60mm / אלון לבן מלא (solid — edge-glue wide parts)",
+      "material_id": "white_oak_60",
+      "grain": "length",
+      "banding": "",
+      "notes": "solid white oak — veneering a 60x60 leg is impractical"
+    },
+    {
+      "name": "Lid",
+      "qty": 1,
+      "length": 1260,
+      "width": 720,
+      "thickness": 30,
+      "material": "white_oak_veneer 30mm / פורניר אלון לבן",
+      "material_id": "white_oak_veneer_30",
+      "grain": "length",
+      "banding": "all",
+      "notes": "30mm ply core, white-oak veneer BOTH faces, solid-oak lipping all round"
+    },
+    {
+      "name": "BackApron",
+      "qty": 1,
+      "length": 1080,
+      "width": 180,
+      "thickness": 20,
+      "material": "white_oak_veneer 20mm / פורניר אלון לבן",
+      "material_id": "white_oak_veneer_20",
+      "grain": "length",
+      "banding": "l1",
+      "notes": "piano hinge mounts along its top edge"
+    },
+    {
+      "name": "EndApron",
+      "qty": 2,
+      "length": 540,
+      "width": 180,
+      "thickness": 20,
+      "material": "white_oak_veneer 20mm / פורניר אלון לבן",
+      "material_id": "white_oak_veneer_20",
+      "grain": "length",
+      "banding": "l1",
+      "notes": ""
+    },
+    {
+      "name": "FrontTopRail",
+      "qty": 1,
+      "length": 1080,
+      "width": 18,
+      "thickness": 18,
+      "material": "plywood_birch 18mm / דיקט בירץ׳",
+      "material_id": "plywood_birch_18",
+      "grain": "length",
+      "banding": "",
+      "notes": "hidden tie rail + lid bearing, set back to clear the TV"
+    },
+    {
+      "name": "FrontBotRail",
+      "qty": 1,
+      "length": 1080,
+      "width": 20,
+      "thickness": 20,
+      "material": "white_oak_veneer 20mm / פורניר אלון לבן",
+      "material_id": "white_oak_veneer_20",
+      "grain": "length",
+      "banding": "front",
+      "notes": "exposed between the legs"
+    },
+    {
+      "name": "CenterDivider",
+      "qty": 1,
+      "length": 620,
+      "width": 105,
+      "thickness": 18,
+      "material": "plywood_birch 18mm / דיקט בירץ׳",
+      "material_id": "plywood_birch_18",
+      "grain": "length",
+      "banding": "",
+      "notes": "internal drawer divider, stopped short to clear the TV"
+    },
+    {
+      "name": "CenterStile",
+      "qty": 1,
+      "length": 168,
+      "width": 44,
+      "thickness": 20,
+      "material": "white_oak 20mm / אלון לבן מלא (solid — edge-glue wide parts)",
+      "material_id": "white_oak_20",
+      "grain": "length",
+      "banding": "",
+      "notes": "solid oak; stub-tenoned to the bottom rail, cleated to the inner top rail — NOT to the lid"
+    },
+    {
+      "name": "DrawerFront",
+      "qty": 2,
+      "length": 505,
+      "width": 168,
+      "thickness": 20,
+      "material": "white_oak_veneer 20mm / פורניר אלון לבן",
+      "material_id": "white_oak_veneer_20",
+      "grain": "length",
+      "banding": "all",
+      "notes": "APPLIED false front, screwed from inside the box; 3mm reveal either side of the centre stile"
+    },
+    {
+      "name": "DrawerSide",
+      "qty": 4,
+      "length": 595,
+      "width": 100,
+      "thickness": 15,
+      "material": "plywood_birch 15mm / דיקט בירץ׳",
+      "material_id": "plywood_birch_15",
+      "grain": "none",
+      "banding": "",
+      "notes": ""
+    },
+    {
+      "name": "DrawerFB",
+      "qty": 4,
+      "length": 440,
+      "width": 100,
+      "thickness": 15,
+      "material": "plywood_birch 15mm / דיקט בירץ׳",
+      "material_id": "plywood_birch_15",
+      "grain": "none",
+      "banding": "",
+      "notes": ""
+    },
+    {
+      "name": "DrawerBottom",
+      "qty": 2,
+      "length": 565,
+      "width": 440,
+      "thickness": 4,
+      "material": "hardboard 4mm / מזונית",
+      "material_id": "hardboard_4",
+      "grain": "none",
+      "banding": "",
+      "notes": "captured between the front and back panels"
+    }
+  ],
+  "material_summary": {
+    "white_oak_60": {
+      "parts": 4,
+      "area": 0.094,
+      "band": 0.0,
+      "sheets_est": 1,
+      "band_m": 0.0
+    },
+    "white_oak_veneer_30": {
+      "parts": 1,
+      "area": 0.907,
+      "band": 3960.0,
+      "sheets_est": 1,
+      "band_m": 3.96
+    },
+    "white_oak_veneer_20": {
+      "parts": 6,
+      "area": 0.58,
+      "band": 5932.0,
+      "sheets_est": 1,
+      "band_m": 5.93
+    },
+    "plywood_birch_18": {
+      "parts": 2,
+      "area": 0.085,
+      "band": 0.0,
+      "sheets_est": 1,
+      "band_m": 0.0
+    },
+    "white_oak_20": {
+      "parts": 1,
+      "area": 0.007,
+      "band": 0.0,
+      "sheets_est": 1,
+      "band_m": 0.0
+    },
+    "plywood_birch_15": {
+      "parts": 8,
+      "area": 0.414,
+      "band": 0.0,
+      "sheets_est": 1,
+      "band_m": 0.0
+    },
+    "hardboard_4": {
+      "parts": 2,
+      "area": 0.497,
+      "band": 0.0,
+      "sheets_est": 1,
+      "band_m": 0.0
+    }
+  },
+  "warnings": [],
+  "nesting_note": "Sheet count is a heuristic estimate. Use OpenCutList / CutList Optimizer for a production cut plan."
+}

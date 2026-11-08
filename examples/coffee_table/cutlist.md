@@ -1,0 +1,32 @@
+# Cut list — Hidden-TV coffee table
+
+Units: mm
+
+| Part | Qty | Length | Width | Thk | Material | Grain | Banding | Notes |
+|---|---:|---:|---:|---:|---|---|---|---|
+| Leg | 4 | 390 | 60 | 60 | white_oak 60mm / אלון לבן מלא (solid — edge-glue wide parts) | length |  | solid white oak — veneering a 60x60 leg is impractical |
+| Lid | 1 | 1260 | 720 | 30 | white_oak_veneer 30mm / פורניר אלון לבן | length | all | 30mm ply core, white-oak veneer BOTH faces, solid-oak lipping all round |
+| BackApron | 1 | 1080 | 180 | 20 | white_oak_veneer 20mm / פורניר אלון לבן | length | l1 | piano hinge mounts along its top edge |
+| EndApron | 2 | 540 | 180 | 20 | white_oak_veneer 20mm / פורניר אלון לבן | length | l1 |  |
+| FrontTopRail | 1 | 1080 | 18 | 18 | plywood_birch 18mm / דיקט בירץ׳ | length |  | hidden tie rail + lid bearing, set back to clear the TV |
+| FrontBotRail | 1 | 1080 | 20 | 20 | white_oak_veneer 20mm / פורניר אלון לבן | length | front | exposed between the legs |
+| CenterDivider | 1 | 620 | 105 | 18 | plywood_birch 18mm / דיקט בירץ׳ | length |  | internal drawer divider, stopped short to clear the TV |
+| CenterStile | 1 | 168 | 44 | 20 | white_oak 20mm / אלון לבן מלא (solid — edge-glue wide parts) | length |  | solid oak; stub-tenoned to the bottom rail, cleated to the inner top rail — NOT to the lid |
+| DrawerFront | 2 | 505 | 168 | 20 | white_oak_veneer 20mm / פורניר אלון לבן | length | all | APPLIED false front, screwed from inside the box; 3mm reveal either side of the centre stile |
+| DrawerSide | 4 | 595 | 100 | 15 | plywood_birch 15mm / דיקט בירץ׳ | none |  |  |
+| DrawerFB | 4 | 440 | 100 | 15 | plywood_birch 15mm / דיקט בירץ׳ | none |  |  |
+| DrawerBottom | 2 | 565 | 440 | 4 | hardboard 4mm / מזונית | none |  | captured between the front and back panels |
+
+## Material summary
+
+| Material | Parts | Area (m²) | Banding (m) | Sheets (est.) |
+|---|---:|---:|---:|---:|
+| white_oak 60mm / אלון לבן מלא (solid — edge-glue wide parts) | 4 | 0.094 | 0.0 | 1 |
+| white_oak_veneer 30mm / פורניר אלון לבן | 1 | 0.907 | 3.96 | 1 |
+| white_oak_veneer 20mm / פורניר אלון לבן | 6 | 0.58 | 5.93 | 1 |
+| plywood_birch 18mm / דיקט בירץ׳ | 2 | 0.085 | 0.0 | 1 |
+| white_oak 20mm / אלון לבן מלא (solid — edge-glue wide parts) | 1 | 0.007 | 0.0 | 1 |
+| plywood_birch 15mm / דיקט בירץ׳ | 8 | 0.414 | 0.0 | 1 |
+| hardboard 4mm / מזונית | 2 | 0.497 | 0.0 | 1 |
+
+> Sheet count is a heuristic estimate, not an optimised cut plan. For production nesting use OpenCutList or CutList Optimizer.

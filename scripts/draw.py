@@ -75,7 +75,23 @@ def draw(spec, path, internal=False, title=None, states=False, max_w=1600, max_h
     def SX(z): return sx0+z*s
     def Y(y):  return yb-y*s
     moved=[p for p in parts if p.get("motion")] if states else []
-    open_h = (H*s+120) if moved else 0
+    # The open state can reach far above the piece's own height: a flip-top lid
+    # that is longer than the piece is tall swings up well past H. Size the open
+    # panel from the real swept reach, or the raised part is drawn straight
+    # through the closed views and off the top of the sheet.
+    reach=H
+    for p in moved:
+        mo=p["motion"]
+        if mo.get("type")=="hinge":
+            piv=mo.get("pivot",[p["y"],p["z"]]); py,pz=piv[0],piv[1]
+            r=max(math.hypot(yy-py,zz-pz)
+                  for yy in (p["y"],p["y"]+p["sy"])
+                  for zz in (p["z"],p["z"]+p["sz"]))
+            reach=max(reach,py+r)
+        elif mo.get("type")=="slide":
+            v=mo.get("vector",[0,0,0])
+            reach=max(reach,p["y"]+p["sy"]+v[1])
+    open_h = (reach*s+120) if moved else 0
     Wp,Hp = sx0+D*s+230, yb+90+open_h
     o=[_svg(Wp,Hp, title or f'{spec["name"]} — front + side elevation · mm')]
     o.append(_txt(fx0+W*s/2,52,"front",11,MUT,"middle"))
@@ -110,7 +126,7 @@ def draw(spec, path, internal=False, title=None, states=False, max_w=1600, max_h
     o.append(_txt(cx+18,Y(H/2),"clear bays",11,MUT,"start"))
     # open-state side elevation (P1-1): drawn below, parts with a motion dict moved
     if moved:
-        oyb=yb+90+H*s
+        oyb=yb+90+reach*s
         def OY(y): return oyb-y*s
         o.append(_txt(sx0,oyb+80,"side — open state",11,MUT,"start"))
         for p in parts:

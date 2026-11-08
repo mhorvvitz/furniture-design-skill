@@ -101,3 +101,69 @@ def test_elevation_include_filter_reduces_part_count(demo_spec, tmp_path):
                    include=lambda p: p.get("kind") == "door")
     assert len(_rects(few_svg.read_text(encoding="utf-8"))) < \
            len(_rects(all_svg.read_text(encoding="utf-8")))
+
+
+def _flip_top_spec():
+    """A flip-top: the lid (720mm long) is longer than the piece is tall (420mm),
+    so when it swings up it reaches far above H."""
+    from carcass import Carcass
+    c = Carcass(1260, 420, 720, t=20, name="FlipTop")
+    c.add("Leg", 30, 0, 30, 60, 390, 60)
+    c.add("Lid", 0, 390, 0, 1260, 30, 720,
+          motion={"type": "hinge", "pivot": [390, 0], "angle": 100,
+                  "group": "lid", "label": "Lift the lid"})
+    return c.spec()
+
+
+def test_open_state_canvas_fits_a_lid_taller_than_the_piece(tmp_path):
+    """Regression: the open panel was sized H*s+120, assuming the open state
+    needs only the piece's own height. A 720mm lid pivoting at y=390 reaches
+    ~1110mm up, so the raised lid was drawn through the closed views and off the
+    top of the sheet. Every drawn y must now land inside the canvas."""
+    spec = _flip_top_spec()
+    p = tmp_path / "flip.svg"
+    draw.draw(spec, str(p), states=True)
+    svg = p.read_text(encoding="utf-8")
+
+    h = float(re.search(r'viewBox="0 0 [\d.]+ ([\d.]+)"', svg).group(1))
+    rot = re.search(r'rotate\(-?[\d.]+ ([\d.]+) ([\d.]+)\)', svg)
+    assert rot, "open state must rotate the hinged lid"
+    pivot_y = float(rot.group(2))
+
+    # The lid reaches (pivot_y - r_px) at its highest; that must stay on canvas.
+    # Scale is recoverable from the canvas: just assert the pivot leaves room for
+    # a lid longer than the piece, which the old formula did not.
+    assert pivot_y < h, "pivot off canvas"
+    # 720mm of lid above a 390mm pivot needs far more than the 420mm the old
+    # formula allowed; the canvas must have grown well past the closed-only size.
+    closed_only = tmp_path / "closed.svg"
+    draw.draw(spec, str(closed_only), states=False)
+    h_closed = float(re.search(r'viewBox="0 0 [\d.]+ ([\d.]+)"',
+                               closed_only.read_text(encoding="utf-8")).group(1))
+    assert h > h_closed + 400, (
+        f"open-state canvas {h} barely grew over the closed {h_closed} — "
+        f"the swept reach of the lid is not being accounted for")
+
+
+def test_open_state_rotated_lid_clears_the_title_block(tmp_path):
+    """The sheet title sits at y=30. Before the fix the raised lid tip landed at
+    y~=4, straight through it. Compute the rotated tip and assert it clears."""
+    import math as _m
+    spec = _flip_top_spec()
+    p = tmp_path / "flip2.svg"
+    draw.draw(spec, str(p), states=True)
+    svg = p.read_text(encoding="utf-8")
+
+    g = re.search(r'<g transform="rotate\((-?[\d.]+) ([\d.]+) ([\d.]+)\)">'
+                  r'<rect x="([-\d.]+)" y="([-\d.]+)" width="([-\d.]+)" height="([-\d.]+)"',
+                  svg)
+    assert g, "expected a rotated lid rect in the open state"
+    ang, cx, cy, x, y, w, hh = (float(v) for v in g.groups())
+
+    th = _m.radians(ang)
+    tip = min(
+        cy + (px - cx) * _m.sin(th) + (py - cy) * _m.cos(th)
+        for px in (x, x + w) for py in (y, y + hh))
+    assert tip > 100, (
+        f"raised lid reaches y={tip:.1f}, colliding with the title at y=30 — "
+        f"the open panel is not tall enough for the lid's swept reach")
