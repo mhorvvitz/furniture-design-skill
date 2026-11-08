@@ -32,26 +32,19 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 SRC = os.path.join(HERE, "render.html")
 OUT = os.path.join(HERE, "render.png")
 
-# One deterministic hero frame.
+# One deterministic hero frame. Lighting and materials are NOT touched — the
+# still must look like the live viewer. The only presentation change is a white
+# backdrop so the image drops cleanly into the landing page's white card; the
+# value is pushed far above 1.0 because it still passes through ACES tone
+# mapping, where a plain 0xffffff lands around 0xdadada.
 OVERRIDE = """
 <style>#ui,#cap{display:none!important}</style>
 <script>
 for (var i = 0; i < 200; i++) {
   mgroups.lid.userData.tgt = 1; mgroups.drawers.userData.tgt = 0; animateMotion();
 }
-R.toneMappingExposure = 0.62;
-mats.white_oak.color.setHex(0xa87f44);
-mats.white_oak_veneer.color.setHex(0xbb9057);
-if (mats.plywood_birch) mats.plywood_birch.color.setHex(0xd8bf93);
-if (mats.hardboard)     mats.hardboard.color.setHex(0xc2a070);
-scene.background.setRGB(30.0, 30.0, 30.0);          /* >1: ACES pulls this down a long way */
+scene.background.setRGB(30.0, 30.0, 30.0);
 ground.material.color.setRGB(26.0, 26.0, 26.0);
-scene.children.forEach(function (l) {
-  if (l.isDirectionalLight && l.intensity > 1)  l.intensity = 0.90;
-  if (l.isDirectionalLight && l.intensity <= 1) l.intensity = 0.28;
-  if (l.isHemisphereLight) l.intensity = 0.30;
-  if (l.isAmbientLight)    l.intensity = 0.10;
-});
 R.setSize(1400, 1000, false);
 cam.aspect = 1.4; cam.updateProjectionMatrix();
 tgt.set(630, 430, 330); az = -0.70; pol = 1.14; rad = 2320;

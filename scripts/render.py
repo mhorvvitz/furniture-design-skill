@@ -116,12 +116,23 @@ const tagged={{}};GROUPS.forEach(gl=>tagged[gl[1]]=[]);
 function reg(o,tag){{if(tag&&tagged[tag])tagged[tag].push(o);}}
 const T=THREE,R=new T.WebGLRenderer({{canvas:c,antialias:true}});
 R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;R.outputEncoding=T.sRGBEncoding;
-R.toneMapping=T.ACESFilmicToneMapping;R.toneMappingExposure=1.05;
+R.toneMapping=T.ACESFilmicToneMapping;R.toneMappingExposure=1.0;
+/* COLOUR SPACE. Every colour here (materials.json rgb, the paper background, the
+   edge line) is an sRGB value as a designer would read it. three r128 treats
+   material.color as LINEAR, then encodes the frame to sRGB on the way out — so
+   an unconverted value is effectively sRGB-encoded twice, which flattens hue:
+   oak 205,178,133 rendered as 233,219,192, a pale grey-beige rather than oak.
+   srgb() converts on the way in so a fully-lit face reads back as its catalog
+   colour. Verified by sampling the render against assets/materials.json. */
+function srgb(hex){{ return new T.Color(hex).convertSRGBToLinear(); }}
+/* Backdrop tones are NOT converted: they are chosen for how they DISPLAY, not
+   matched to a catalog albedo, and converting them puts the paper background
+   through tone mapping twice over — it comes out dark grey. */
 const scene=new T.Scene();scene.background=new T.Color(0xf1efe9);const root=new T.Group();scene.add(root);
-const mats={{}};function mat(k){{if(!mats[k]){{const c=parseInt(CMAP[k]||CMAP.default);
+const mats={{}};function mat(k){{if(!mats[k]){{const c=srgb(parseInt(CMAP[k]||CMAP.default));
   mats[k]=(k==='steel')?new T.MeshStandardMaterial({{color:c,roughness:0.35,metalness:0.85}})
     :new T.MeshStandardMaterial({{color:c,roughness:0.75,metalness:0}});}}return mats[k];}}
-const edge=new T.LineBasicMaterial({{color:0x8a7f66,transparent:true,opacity:0.32}});
+const edge=new T.LineBasicMaterial({{color:srgb(0x8a7f66),transparent:true,opacity:0.32}});
 // --- motion groups (P1-2): parts carrying a `motion` dict share a THREE.Group
 // keyed by motion.group; hinge groups pivot, slide groups translate. No motion
 // on any part => behaves exactly like the static render. ---
@@ -155,13 +166,20 @@ EXP.forEach(g=>{{const base=(g.parent.userData&&g.parent.userData.base)||new T.V
   const wp=g.userData.home.clone().add(base);
   let dir=wp.clone().sub(CEN);if(dir.length()<1)dir.set(0,1,0);
   g.userData.expl=dir.normalize().multiplyScalar(0.35*Math.max(W,H,D));}});
-const ground=new T.Mesh(new T.PlaneGeometry(40000,40000),new T.MeshStandardMaterial({{color:0xe6e4dd,roughness:1}}));
+const ground=new T.Mesh(new T.PlaneGeometry(40000,40000),new T.MeshStandardMaterial({{color:new T.Color(0xe6e4dd).multiplyScalar(3.8),roughness:1}}));
+/* The ground plane is 40m across and fills most of the frame, so it IS the
+   backdrop. Its albedo is scaled well above 1 so that under the calibrated
+   (much dimmer) lights it still reads as the paper tone rather than mid-grey,
+   while still taking the contact shadow. */
 ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
-scene.add(new T.HemisphereLight(0xffffff,0xbcbab2,0.55));scene.add(new T.AmbientLight(0xffffff,0.18));
-const key=new T.DirectionalLight(0xffffff,2.1);key.position.set(W*1.4,H*1.5,D*4+1500);key.castShadow=true;
+/* Intensities are calibrated so a well-lit face reads back close to its catalog
+   colour instead of blowing past it — they were set for a brighter scene before
+   the sRGB fix above, and together drove every material to near-white. */
+scene.add(new T.HemisphereLight(0xffffff,srgb(0xbcbab2),0.20));scene.add(new T.AmbientLight(0xffffff,0.05));
+const key=new T.DirectionalLight(0xffffff,0.55);key.position.set(W*1.4,H*1.5,D*4+1500);key.castShadow=true;
 key.shadow.mapSize.set(2048,2048);key.shadow.bias=-0.0004;
 Object.assign(key.shadow.camera,{{near:100,far:H*5,left:-W*2,right:W*2,top:H*1.6,bottom:-H*0.4}});scene.add(key);
-const fill=new T.DirectionalLight(0xffffff,0.5);fill.position.set(-W*1.6,H*0.8,D*2);scene.add(fill);
+const fill=new T.DirectionalLight(0xffffff,0.16);fill.position.set(-W*1.6,H*0.8,D*2);scene.add(fill);
 const cam=new T.PerspectiveCamera(40,1,10,60000);const tgt=new T.Vector3(W/2,H/2,D/2);
 const AZ0=-0.72, rad0=Math.max(W,H)*2.0;
 let az=AZ0,pol=1.12,rad=rad0;
