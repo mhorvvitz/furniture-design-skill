@@ -61,6 +61,7 @@ Change an input in `docs/spec.md` first, then rebuild the positioned spec, then 
 - `scripts/cutlist.py` — converts a JSON furniture spec into a validated cut list (md/csv/json/xlsx), sheet-fit checks, banding totals, and a sheet-yield estimate.
 - `scripts/draw.py` — dimensioned SVG plan, front/side elevations, and an open-state elevation for moving parts.
 - `scripts/render.py` — self-contained three.js HTML preview with motion (open/close) and explode toggles.
+- `scripts/blender_render.py` — optional photoreal product still (Blender Cycles via `pip install bpy`, ~1 GB — not vendored) for online-store listings; alpha cutouts and 360° turntable sets.
 - `scripts/assembly.py` — connection derivation, per-part drilling coordinates, build order, and a step-by-step assembly plan.
 - `scripts/sketchup_emit.py` — emits SketchUp build code for a Trimble SketchUp MCP backend, with unit conversion and part grouping.
 - `scripts/packet.py` — assembles the SVG views + cut-list/assembly markdown into one print-clean A4 PDF (headless Chrome/Edge); no external skill dependency.

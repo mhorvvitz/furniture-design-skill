@@ -115,6 +115,50 @@ The render is for **approval and communication**, not measurement. The carpenter
 builds from the 2D dimensioned drawings and the cut list — and, once committed,
 the SketchUp `.skp` — never from this render.
 
+## Photoreal stills — Blender Cycles (optional, for store listings)
+
+When the user needs a **store-grade product photo** — an online-shop listing, a
+catalogue page, a marketing still — the three.js preview isn't enough: that's a
+real-time raster. `scripts/blender_render.py` renders the same positioned spec
+with **Blender Cycles** (path tracing, procedural wood grain, studio area
+lights, soft contact shadow, AgX tone mapping, denoised).
+
+This tier is **optional and heavyweight**, which is why the dependency is not
+vendored in the repo:
+
+```bash
+pip install bpy     # Blender as a Python module, ~1 GB installed, Python 3.11
+```
+
+If `bpy` is missing the script exits with that exact instruction rather than
+tracebacking. Usage:
+
+```bash
+python3 scripts/blender_render.py examples/bookshelf/bookshelf_spec.py shot.png
+python3 scripts/blender_render.py spec.json shot.png --res 1600x2000 --samples 256
+python3 scripts/blender_render.py spec.py shot.png --transparent   # alpha cutout + shadow catcher
+python3 scripts/blender_render.py spec.py shot.png --frames 12     # 360° turntable set
+```
+
+- Default output is 1200×1500 (4:5, the standard listing crop), 128 samples,
+  CPU — roughly 1–3 minutes for a carcass piece. Raise `--samples`/`--res` for
+  the final shot only.
+- `--transparent` renders RGBA with the ground as a shadow catcher — the classic
+  e-commerce cutout that composites onto a white product page with its soft
+  shadow intact.
+- `--frames N` renders an N-still 360° spin set for a store spin viewer.
+- Colours come from `assets/materials.json` `rgb` like every other emitter;
+  woody materials get procedural grain running along part x (the cut-list grain
+  axis), `melamine`/`mdf`/`hardboard`/`osb` render flat, `rod`s render as steel
+  cylinders, `fixture`s as muted matte.
+- `motion` dicts are ignored — the still is the closed state. Open-state checks
+  stay in the three.js preview.
+
+**Where it sits in the staging**: this is a *deliverable*, not an iteration
+tool. Iterate in tiers 1–2, get sign-off, and shoot the listing photo once —
+same discipline as the SketchUp commit. It does not replace the dimensioned
+drawings, the cut list, or the `.skp`.
+
 ## Staging the three tiers
 
 1. **2D dimensioned drawings** (above) — settle layout and proportions; cheapest,
