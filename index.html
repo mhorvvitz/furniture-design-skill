@@ -110,9 +110,9 @@
   /* featured example — the piece that exercises the most of the pipeline */
   .feature{border:1.5px solid var(--ink);background:var(--paper);display:grid;
     grid-template-columns:1.1fr 1fr;margin-bottom:26px;}
-  .feature .shot{background:#fff;border-right:1px solid var(--line);padding:16px;
+  .feature .shot{background:#fff;border-right:1px solid var(--line);padding:14px;
     display:flex;align-items:center;justify-content:center;min-height:260px;}
-  .feature .shot img{max-width:100%;max-height:430px;height:auto;display:block;}
+  .feature .shot img{max-width:100%;max-height:520px;height:auto;display:block;}
   .feature .body{padding:26px clamp(20px,2.6vw,30px);display:flex;flex-direction:column;gap:12px;}
   .feature .flag{font-family:var(--mono);font-size:11px;letter-spacing:.14em;
     text-transform:uppercase;color:var(--dim);font-weight:600;}
@@ -275,7 +275,7 @@
         </g>
       </svg>
       <p class="drawcap"><b>Hidden-TV flip-top coffee table</b> · <span class="dim">1260 × 420 × 720</span> mm<br>
-        side elevation, lid up 100° · <a href="examples/coffee_table">see the full package ↗</a></p>
+        side elevation, lid up 100° · <a href="https://mhorvvitz.github.io/hidden-tv-coffee-table-design/">see the full package ↗</a></p>
     </div>
   </section>
 
@@ -298,25 +298,27 @@
     <p style="max-width:62ch;margin:-14px 0 28px;color:#39362f;">Four pieces run end-to-end through the pipeline. Each folder holds its spec and the whole generated package — drawings, cut list, 3D preview, assembly plan, and packet PDF.</p>
 
     <div class="feature">
-      <div class="shot"><img src="examples/coffee_table/front.svg" alt="Elevations of the hidden-TV coffee table, including the open state with the lid raised and the drawers slid out"></div>
+      <div class="shot"><img src="examples/coffee_table/render.png" alt="3D render of the hidden-TV coffee table in white oak, lid flipped up with the 43-inch television facing out and the two drawer boxes visible below"></div>
       <div class="body">
         <div class="flag">Featured · the piece that pushed hardest</div>
         <h3>Hidden-TV flip-top coffee table</h3>
         <div class="spec"><span class="dim">1260 × 420 × 720</span> mm · 26 parts, 12 of them cut<br>White oak + oak veneer · piano hinge, gas struts</div>
-        <p>A leg-and-apron frame with no carcass panels at all, carrying a lid that flips up 100° with a 43&#8243; television on its underside. It is four hard cases at once:</p>
+        <p>A solid white-oak coffee table that hides a 43&#8243; television under a rear-hinged flip-up top, with two farmhouse drawers underneath.</p>
         <ul>
-          <li><b>Out of envelope</b> — every part placed through the generic <span class="mono">add()</span> escape hatch.</li>
-          <li><b>A mechanism</b> — the lid's swing sets the open-state elevation and the 3D toggle from one <span class="mono">motion</span> field.</li>
-          <li><b>Fixtures</b> — the TV and bracket drive the clearance stack and every view, but never reach the cut list.</li>
-          <li><b>Honest joinery</b> — all 13 contact pairs authored, so nothing is guessed. The struts come back as a sizing procedure marked <em>assumed</em>, not as invented hole coordinates.</li>
+          <li><b>Flip-up screen</b> — the TV is VESA-mounted to the underside of the lid. It lies flat in the well when the table is closed, and ends up facing the sofa when the lid is up.</li>
+          <li><b>Lifted by hand, no motor</b> — a rear piano hinge and two gas struts counterbalance the 12&nbsp;kg lid-and-TV assembly, so the top rises with one hand and never slams.</li>
+          <li><b>Deep farmhouse drawers</b> — two open-topped boxes running 595&nbsp;mm deep behind full-height oak fronts, split by a fixed centre stile. Reach the far end by lifting the lid.</li>
+          <li><b>No visible fasteners</b> — solid-oak legs doweled to veneered aprons (Ø8&nbsp;mm), drawer boxes pocket-screwed from the inside. Nothing shows on the finished piece.</li>
         </ul>
+        <p style="font-size:14px;color:var(--graphite)">Every number above comes out of one spec module — the cut list, the drawings, the 3D view and the assembly plan are all derived from it, so none of them can disagree.</p>
         <div class="links">
+          <a href="https://mhorvvitz.github.io/hidden-tv-coffee-table-design/">Project site ↗</a>
           <a href="examples/coffee_table/packet.pdf">Packet PDF</a>
           <a href="examples/coffee_table/cutlist.md">Cut list</a>
           <a href="examples/coffee_table/assembly.md">Assembly plan</a>
           <a href="examples/coffee_table/render.html">3D</a>
-          <a href="examples/coffee_table/coffee_table_spec.py">The spec ↗</a>
-          <a href="examples/coffee_table">Folder ↗</a>
+          <a href="https://github.com/mhorvvitz/furniture-design-skill/blob/main/examples/coffee_table/coffee_table_spec.py">The spec ↗</a>
+          <a href="https://github.com/mhorvvitz/furniture-design-skill/tree/main/examples/coffee_table">Folder ↗</a>
         </div>
       </div>
     </div>
@@ -332,7 +334,7 @@
             <a href="examples/bookshelf/packet.pdf">Packet PDF</a>
             <a href="examples/bookshelf/cutlist.md">Cut list</a>
             <a href="examples/bookshelf/render.html">3D</a>
-            <a href="examples/bookshelf">Folder ↗</a>
+            <a href="https://github.com/mhorvvitz/furniture-design-skill/tree/main/examples/bookshelf">Folder ↗</a>
           </div>
         </div>
       </div>
@@ -346,7 +348,7 @@
             <a href="examples/table/packet.pdf">Packet PDF</a>
             <a href="examples/table/cutlist.md">Cut list</a>
             <a href="examples/table/render.html">3D</a>
-            <a href="examples/table">Folder ↗</a>
+            <a href="https://github.com/mhorvvitz/furniture-design-skill/tree/main/examples/table">Folder ↗</a>
           </div>
         </div>
       </div>
@@ -360,7 +362,7 @@
             <a href="examples/closet/packet.pdf">Packet PDF</a>
             <a href="examples/closet/cutlist.md">Cut list</a>
             <a href="examples/closet/render.html">3D</a>
-            <a href="examples/closet">Folder ↗</a>
+            <a href="https://github.com/mhorvvitz/furniture-design-skill/tree/main/examples/closet">Folder ↗</a>
           </div>
         </div>
       </div>
