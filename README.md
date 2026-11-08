@@ -69,9 +69,35 @@ Change an input in `docs/spec.md` first, then rebuild the positioned spec, then 
 
 ## Examples
 
-Three real pieces, each run end-to-end through the pipeline. Every folder holds
+Four real pieces, each run end-to-end through the pipeline. Every folder holds
 its `*_spec.py` and the full generated package — cut list (md/csv/json/xlsx),
 plan + elevations (SVG), 3D preview (HTML), assembly plan, and the packet PDF.
+
+### Start here — [`examples/coffee_table`](examples/coffee_table)
+
+**Hidden-TV flip-top coffee table**, 1260 × 420 × 720 mm, white oak — the piece
+that pushed the skill hardest, and the best single read on what it actually
+does. A leg-and-apron frame with no carcass panels at all, carrying a lid that
+flips up 100° with a 43″ television on its underside. Four hard cases at once:
+
+- **Out of envelope** — every part placed through the generic `add()` escape
+  hatch; there is no `sides()`/`top()`/`shelves()` box anywhere in it.
+- **A mechanism** — one `motion` field on the lid drives both the open-state
+  elevation in `front.svg` and the toggle in the 3D view. The TV and bracket
+  share the lid's motion group, so they swing with it.
+- **Fixtures** — the TV and its VESA bracket live in the spec because they set
+  the clearance stack (they are why the table is 660 mm deep and not 600), but
+  they carry `kind="fixture"` and never reach the cut list.
+- **Honest joinery** — all 13 contact pairs are authored in `joint_overrides`,
+  so nothing is flagged "default_assumed". The gas struts come back as a torque
+  **sizing procedure marked `assumed`**, not as invented drilling coordinates —
+  which is the whole point of [hard rule 13](SKILL.md).
+
+The three `"none"` entries in its `joint_overrides` are the mechanism: the lid
+fastens to the back apron (hinge) and the end aprons (struts) and to nothing
+else. Fastening it to the legs or the front rail would weld it shut.
+
+### The rest
 
 | Example | Piece | Size (mm) | Material | Shows off |
 |---|---|---|---|---|
@@ -82,7 +108,7 @@ plan + elevations (SVG), 3D preview (HTML), assembly plan, and the packet PDF.
 Regenerate any of them with:
 
 ```bash
-python scripts/package.py examples/table/table_spec.py --out examples/table
+python scripts/package.py examples/coffee_table/coffee_table_spec.py --out examples/coffee_table
 ```
 
 ## Using this skill with Claude

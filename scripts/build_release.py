@@ -27,19 +27,36 @@ MAIN_ARTIFACT = "furniture-design-skill-main.zip"
 
 
 def _skill_files():
-    """Files that make up the installable skill (clean — no build/dev scripts)."""
+    """Files that make up the installable skill (clean — no build/dev scripts).
+
+    The example SPEC MODULES ship too (~24KB), but not their generated output.
+    SKILL.md sends the reader to examples/coffee_table/ for the worked mechanism
+    piece, so the module has to exist after install or that is a dead pointer.
+    The packets, renders and cut lists stay out — they are regenerable from the
+    module with one package.py command, and they are 1.3MB.
+    """
     fs = ["SKILL.md", "README.md", "LIMITATIONS.md"]
     fs += sorted(glob.glob("assets/*.json"))
     fs += sorted(glob.glob("references/*.md"))
     fs += sorted(f for f in glob.glob("scripts/*.py")
                  if os.path.basename(f) != "build_release.py")
+    fs += sorted(glob.glob("examples/*/*_spec.py"))
     return [f.replace("\\", "/") for f in fs]
 
 
 def _main_files(skill_files):
     """Repo snapshot: the skill payload plus the landing page, build script,
-    .gitignore, and the freshly-built .skill itself."""
+    .gitignore, and the freshly-built .skill itself.
+
+    Also the whole examples/ tree. index.html renders each example's front.svg
+    and links its packet PDF, so without them the landing page in this snapshot
+    is broken — and this archive exists precisely so the page can be read
+    offline.
+    """
     extra = ["index.html", ".gitignore", "scripts/build_release.py", SKILL_ARTIFACT]
+    extra += [f.replace("\\", "/")
+              for f in glob.glob("examples/**/*", recursive=True)
+              if os.path.isfile(f) and "__pycache__" not in f]
     return skill_files + [e for e in extra if os.path.exists(e)]
 
 

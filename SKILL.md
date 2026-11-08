@@ -125,7 +125,12 @@ Log each resolution to the **Decisions** section of `docs/spec.md` with a
 one-line rationale, so a choice is never silently reversed later. **If the piece
 has a moving part** (lift-lid, flip-top, fold-down, TV lift, drawer under a well),
 also read `references/mechanisms.md` here — draw the mechanism envelope and swing
-arc *before* placing structure, and size any strut/hinge by its rules.
+arc *before* placing structure, and size any strut/hinge by its rules. The
+worked reference for all of this is `examples/coffee_table/` — a flip-top lid
+with a hidden TV, built entirely through `add()`, with the served object carried
+as `kind="fixture"`, the swing expressed as one `motion` field, and every
+contact pair authored in `joint_overrides`. Read its spec module before building
+your own mechanism piece.
 
 The error that hides here is **material-thickness math**. A nominal 1000 mm-wide
 carcass in 18 mm panels has an internal width of 1000 − 2×18 = 964 mm, the shelf
@@ -342,7 +347,8 @@ caller's bounds on trust) are in `LIMITATIONS.md`.
 - `references/mechanisms.md` — mechanism pieces (lift-lids, flip-tops, fold-downs,
   TV lifts, drawers-under-a-well): the clearance-stack rule, pivoting-mass torque /
   gas-strut sizing, hinge selection, and racking reinforcement. Read at stage 4
-  when the piece has a moving part.
+  when the piece has a moving part. Worked end-to-end in
+  `examples/coffee_table/`.
 - `references/sketchup-integration.md` — using the SketchUp MCP as the 3D backend:
   division of labour, the mm→inch unit boundary, part→geometry mapping, which
   bundled SketchUp skill owns which job, and the `.skp` deliverable path.
